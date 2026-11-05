@@ -1,4 +1,4 @@
-# SourceGit - Opensource Git GUI client.
+# Yet Another Git Client
 
 [![stars](https://img.shields.io/github/stars/sourcegit-scm/sourcegit.svg)](https://github.com/sourcegit-scm/sourcegit/stargazers)
 [![forks](https://img.shields.io/github/forks/sourcegit-scm/sourcegit.svg)](https://github.com/sourcegit-scm/sourcegit/forks)

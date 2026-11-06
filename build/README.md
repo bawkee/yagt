@@ -1,7 +1,23 @@
 # build
 
-> [!WARNING]
-> The files under the `build` folder is used for `Github Action` only, **NOT** for end users.
+> [!NOTE]
+> The packaging files under the `build` folder are used by GitHub Actions. For a local release build, use `build-release.ps1` from the repository root.
+
+## Local release build
+
+Run the script with PowerShell 7 from the repository root. It defaults to the current platform and architecture and writes the published app to `artifacts/release/<runtime>`:
+
+```powershell
+./build-release.ps1
+```
+
+You can specify one of `win-x64`, `win-arm64`, `linux-x64`, `linux-arm64`, `osx-x64`, or `osx-arm64`, and optionally choose another output directory:
+
+```powershell
+./build-release.ps1 -RuntimeIdentifier linux-x64 -OutputDirectory out/linux-x64
+```
+
+The publish runs in Release configuration with up to 16 MSBuild worker processes. It produces a self-contained single executable, so the target machine does not need .NET installed. This script uses the .NET single-file bundler instead of NativeAOT to embed the runtime and native graphics libraries; native libraries extract automatically at startup. Debug symbols are embedded too.
 
 ## How to build this project manually
 

@@ -162,11 +162,16 @@ namespace SourceGit.Views
             }
         }
 
+        private static bool ShouldStartDirectly(KeyModifiers modifiers)
+        {
+            return (modifiers is KeyModifiers.Control) == ViewModels.Preferences.Instance.ShowToolbarCommandOptionsByDefault;
+        }
+
         private async void Fetch(object sender, TappedEventArgs e)
         {
             if (DataContext is ViewModels.Repository repo)
             {
-                await repo.FetchAsync(e.KeyModifiers is KeyModifiers.Control);
+                await repo.FetchAsync(ShouldStartDirectly(e.KeyModifiers));
                 e.Handled = true;
             }
         }
@@ -187,7 +192,7 @@ namespace SourceGit.Views
         {
             if (DataContext is ViewModels.Repository repo)
             {
-                await repo.PullAsync(e.KeyModifiers is KeyModifiers.Control);
+                await repo.PullAsync(ShouldStartDirectly(e.KeyModifiers));
                 e.Handled = true;
             }
         }
@@ -208,7 +213,7 @@ namespace SourceGit.Views
         {
             if (DataContext is ViewModels.Repository repo)
             {
-                await repo.PushAsync(e.KeyModifiers is KeyModifiers.Control);
+                await repo.PushAsync(ShouldStartDirectly(e.KeyModifiers));
                 e.Handled = true;
             }
         }
@@ -229,7 +234,7 @@ namespace SourceGit.Views
         {
             if (DataContext is ViewModels.Repository repo)
             {
-                await repo.SyncAsync(e.KeyModifiers is KeyModifiers.Control);
+                await repo.SyncAsync(ShouldStartDirectly(e.KeyModifiers));
                 e.Handled = true;
             }
         }
@@ -238,7 +243,7 @@ namespace SourceGit.Views
         {
             if (DataContext is ViewModels.Repository repo)
             {
-                await repo.StashAllAsync(e.KeyModifiers is KeyModifiers.Control);
+                await repo.StashAllAsync(ShouldStartDirectly(e.KeyModifiers));
                 e.Handled = true;
             }
         }

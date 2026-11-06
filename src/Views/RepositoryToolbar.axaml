@@ -28,7 +28,10 @@
         <ToolTip.Tip>
           <StackPanel Orientation="Vertical">
             <TextBlock Text="{DynamicResource Text.Fetch}"/>
-            <TextBlock Classes="small italic" Margin="0,4,0,0" Text="{DynamicResource Text.CtrlClickTip}" Foreground="{DynamicResource Brush.FG2}"/>
+            <TextBlock Classes="small italic" Margin="0,4,0,0" Text="{DynamicResource Text.CtrlClickTip}" Foreground="{DynamicResource Brush.FG2}"
+                       IsVisible="{Binding ShowToolbarCommandOptionsByDefault, Source={x:Static vm:Preferences.Instance}}"/>
+            <TextBlock Classes="small italic" Margin="0,4,0,0" Text="{DynamicResource Text.CtrlClickTip.ShowOptions}" Foreground="{DynamicResource Brush.FG2}"
+                       IsVisible="{Binding !ShowToolbarCommandOptionsByDefault, Source={x:Static vm:Preferences.Instance}}"/>
           </StackPanel>
         </ToolTip.Tip>
 
@@ -39,7 +42,10 @@
         <ToolTip.Tip>
           <StackPanel Orientation="Vertical">
             <TextBlock Text="{DynamicResource Text.Pull}"/>
-            <TextBlock Classes="small italic" Margin="0,4,0,0" Text="{DynamicResource Text.CtrlClickTip}" Foreground="{DynamicResource Brush.FG2}"/>
+            <TextBlock Classes="small italic" Margin="0,4,0,0" Text="{DynamicResource Text.CtrlClickTip}" Foreground="{DynamicResource Brush.FG2}"
+                       IsVisible="{Binding ShowToolbarCommandOptionsByDefault, Source={x:Static vm:Preferences.Instance}}"/>
+            <TextBlock Classes="small italic" Margin="0,4,0,0" Text="{DynamicResource Text.CtrlClickTip.ShowOptions}" Foreground="{DynamicResource Brush.FG2}"
+                       IsVisible="{Binding !ShowToolbarCommandOptionsByDefault, Source={x:Static vm:Preferences.Instance}}"/>
           </StackPanel>
         </ToolTip.Tip>
         
@@ -56,7 +62,10 @@
         <ToolTip.Tip>
           <StackPanel Orientation="Vertical">
             <TextBlock Text="{DynamicResource Text.Push}"/>
-            <TextBlock Classes="small italic" Margin="0,4,0,0" Text="{DynamicResource Text.CtrlClickTip}" Foreground="{DynamicResource Brush.FG2}"/>
+            <TextBlock Classes="small italic" Margin="0,4,0,0" Text="{DynamicResource Text.CtrlClickTip}" Foreground="{DynamicResource Brush.FG2}"
+                       IsVisible="{Binding ShowToolbarCommandOptionsByDefault, Source={x:Static vm:Preferences.Instance}}"/>
+            <TextBlock Classes="small italic" Margin="0,4,0,0" Text="{DynamicResource Text.CtrlClickTip.ShowOptions}" Foreground="{DynamicResource Brush.FG2}"
+                       IsVisible="{Binding !ShowToolbarCommandOptionsByDefault, Source={x:Static vm:Preferences.Instance}}"/>
           </StackPanel>
         </ToolTip.Tip>
 
@@ -73,7 +82,10 @@
         <ToolTip.Tip>
           <StackPanel Orientation="Vertical">
             <TextBlock Text="{DynamicResource Text.Sync.Title}"/>
-            <TextBlock Classes="small italic" Margin="0,4,0,0" Text="{DynamicResource Text.CtrlClickTip}" Foreground="{DynamicResource Brush.FG2}"/>
+            <TextBlock Classes="small italic" Margin="0,4,0,0" Text="{DynamicResource Text.CtrlClickTip}" Foreground="{DynamicResource Brush.FG2}"
+                       IsVisible="{Binding ShowToolbarCommandOptionsByDefault, Source={x:Static vm:Preferences.Instance}}"/>
+            <TextBlock Classes="small italic" Margin="0,4,0,0" Text="{DynamicResource Text.CtrlClickTip.ShowOptions}" Foreground="{DynamicResource Brush.FG2}"
+                       IsVisible="{Binding !ShowToolbarCommandOptionsByDefault, Source={x:Static vm:Preferences.Instance}}"/>
           </StackPanel>
         </ToolTip.Tip>
 
@@ -84,7 +96,10 @@
         <ToolTip.Tip>
           <StackPanel Orientation="Vertical">
             <TextBlock Text="{DynamicResource Text.Stash}"/>
-            <TextBlock Classes="small italic" Margin="0,4,0,0" Text="{DynamicResource Text.CtrlClickTip}" Foreground="{DynamicResource Brush.FG2}"/>
+            <TextBlock Classes="small italic" Margin="0,4,0,0" Text="{DynamicResource Text.CtrlClickTip}" Foreground="{DynamicResource Brush.FG2}"
+                       IsVisible="{Binding ShowToolbarCommandOptionsByDefault, Source={x:Static vm:Preferences.Instance}}"/>
+            <TextBlock Classes="small italic" Margin="0,4,0,0" Text="{DynamicResource Text.CtrlClickTip.ShowOptions}" Foreground="{DynamicResource Brush.FG2}"
+                       IsVisible="{Binding !ShowToolbarCommandOptionsByDefault, Source={x:Static vm:Preferences.Instance}}"/>
           </StackPanel>
         </ToolTip.Tip>
 

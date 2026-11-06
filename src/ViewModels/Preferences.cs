@@ -193,6 +193,12 @@ namespace SourceGit.ViewModels
             set => SetProperty(ref _check4UpdatesOnStartup, value);
         }
 
+        public bool ShowToolbarCommandOptionsByDefault
+        {
+            get => _showToolbarCommandOptionsByDefault;
+            set => SetProperty(ref _showToolbarCommandOptionsByDefault, value);
+        }
+
         public string IgnoreUpdateTag
         {
             get => _ignoreUpdateTag;
@@ -824,6 +830,7 @@ namespace SourceGit.ViewModels
         private bool _useAutoHideScrollBars = true;
         private bool _useGitHubStyleAvatar = true;
         private bool _useCompactBranchNamesInGraph = true;
+        private bool _showToolbarCommandOptionsByDefault = false;
 
         private bool _check4UpdatesOnStartup = true;
         private double _lastCheckUpdateTime = 0;

@@ -69,6 +69,17 @@
         </Grid>
       </Button>
 
+      <Button Classes="icon_button" Width="32" Margin="16,0,0,0" Tapped="Sync" IsVisible="{Binding !IsBare}">
+        <ToolTip.Tip>
+          <StackPanel Orientation="Vertical">
+            <TextBlock Text="{DynamicResource Text.Sync.Title}"/>
+            <TextBlock Classes="small italic" Margin="0,4,0,0" Text="{DynamicResource Text.CtrlClickTip}" Foreground="{DynamicResource Brush.FG2}"/>
+          </StackPanel>
+        </ToolTip.Tip>
+
+        <Path Width="14" Height="14" Data="{StaticResource Icons.Sync}"/>
+      </Button>
+
       <Button Classes="icon_button" Width="32" Margin="16,0,0,0" Tapped="StashAll" IsVisible="{Binding !IsBare}">
         <ToolTip.Tip>
           <StackPanel Orientation="Vertical">

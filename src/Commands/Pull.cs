@@ -15,10 +15,10 @@ namespace SourceGit.Commands
                 .Append("pull --verbose --progress --rebase=")
                 .Append(useRebase ? "true" : "false")
                 .Append(' ')
-                .Append(remote.Name);
+                .Append(remote.Name.Quoted());
 
             if (remoteBranch != null)
-                builder.Append(' ').Append(remoteBranch.Name);
+                builder.Append(' ').Append(remoteBranch.Name.Quoted());
 
             Args = builder.ToString();
         }

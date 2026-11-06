@@ -225,6 +225,15 @@ namespace SourceGit.Views
             }
         }
 
+        private async void Sync(object sender, TappedEventArgs e)
+        {
+            if (DataContext is ViewModels.Repository repo)
+            {
+                await repo.SyncAsync(e.KeyModifiers is KeyModifiers.Control);
+                e.Handled = true;
+            }
+        }
+
         private async void StashAll(object _, TappedEventArgs e)
         {
             if (DataContext is ViewModels.Repository repo)

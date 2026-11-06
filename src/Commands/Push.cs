@@ -23,7 +23,7 @@ namespace SourceGit.Commands
             if (noVerify)
                 builder.Append("--no-verify ");
 
-            builder.Append(remote.Name).Append(' ').Append(local.Name).Append(':').Append(remoteBranch.Name);
+            builder.Append(remote.Name.Quoted()).Append(' ').Append($"{local.Name}:{remoteBranch.Name}".Quoted());
             Args = builder.ToString();
         }
 

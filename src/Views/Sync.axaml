@@ -1,0 +1,42 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:SourceGit.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="300"
+             x:Class="SourceGit.Views.Sync"
+             x:DataType="vm:Sync">
+  <StackPanel Margin="8,0,0,0">
+    <StackPanel Orientation="Horizontal">
+      <Path Width="16" Height="16" Data="{StaticResource Icons.Sync}"/>
+      <TextBlock FontSize="18" Margin="8,0,0,0" Classes="bold" Text="{DynamicResource Text.Sync.Title}"/>
+    </StackPanel>
+
+    <TextBlock Margin="0,16,8,0" Text="{DynamicResource Text.Sync.Description}" TextWrapping="Wrap" Foreground="{DynamicResource Brush.FG2}"/>
+
+    <Grid Margin="0,16,8,0" RowDefinitions="32,32,32,Auto" ColumnDefinitions="120,*">
+      <TextBlock Grid.Row="0" Grid.Column="0"
+                 HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0"
+                 Text="{DynamicResource Text.Push.Local}"/>
+      <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+        <Path Width="14" Height="14" Data="{StaticResource Icons.Branch}"/>
+        <TextBlock Margin="8,0,0,0" Text="{Binding Current.Name}"/>
+      </StackPanel>
+
+      <TextBlock Grid.Row="1" Grid.Column="0"
+                 HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0"
+                 Text="{DynamicResource Text.Push.To}"/>
+      <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+        <Path Width="14" Height="14" Data="{StaticResource Icons.Branch}"/>
+        <TextBlock Margin="8,0,0,0" Text="{Binding Upstream.FriendlyName}"/>
+      </StackPanel>
+
+      <CheckBox Grid.Row="2" Grid.Column="1"
+                Content="{DynamicResource Text.Pull.UseRebase}"
+                IsChecked="{Binding UseRebase, Mode=TwoWay}"/>
+      <CheckBox Grid.Row="3" Grid.Column="1"
+                Content="{DynamicResource Text.Sync.StashLocalChanges}"
+                IsChecked="{Binding StashLocalChanges, Mode=TwoWay}"/>
+    </Grid>
+  </StackPanel>
+</UserControl>

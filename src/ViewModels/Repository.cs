@@ -714,6 +714,44 @@ namespace SourceGit.ViewModels
                 ShowPopup(new Push(this, null));
         }
 
+        public async Task SyncAsync(bool autoStart)
+        {
+            if (IsBare || !CanCreatePopup())
+                return;
+
+            if (_remotes.Count == 0)
+            {
+                SendNotification("No remotes added to this repository!!!", true);
+                return;
+            }
+
+            if (_currentBranch == null || _currentBranch.IsDetachedHead)
+            {
+                SendNotification("Check out a local branch before synchronizing.", true);
+                return;
+            }
+
+            if (InProgressContext != null)
+            {
+                SendNotification("Finish or abort the current Git operation before synchronizing.", true);
+                return;
+            }
+
+            var upstream = _branches.Find(x => !x.IsLocal && x.FullName.Equals(_currentBranch.Upstream, StringComparison.Ordinal));
+            var remote = upstream == null ? null : _remotes.Find(x => x.Name.Equals(upstream.Remote, StringComparison.Ordinal));
+            if (remote == null)
+            {
+                SendNotification("Set an upstream branch using Push before synchronizing.", true);
+                return;
+            }
+
+            var sync = new Sync(this, remote, upstream);
+            if (autoStart)
+                await ShowAndStartPopupAsync(sync);
+            else
+                ShowPopup(sync);
+        }
+
         public void ApplyPatch()
         {
             if (CanCreatePopup())

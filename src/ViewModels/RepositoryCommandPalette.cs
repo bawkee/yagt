@@ -71,6 +71,7 @@ namespace SourceGit.ViewModels
             _cmds.Add(new("Fetch", "fetch", "Fetch", async () => await repo.FetchAsync(false)));
             _cmds.Add(new("Pull.Title", "pull", "Pull", async () => await repo.PullAsync(false)));
             _cmds.Add(new("Push", "push", "Push", async () => await repo.PushAsync(false)));
+            _cmds.Add(new("Sync.Title", "sync synchronize pull push", "Sync", async () => await repo.SyncAsync(false)));
             _cmds.Add(new("Stash.Title", "stash", "Stashes.Add", async () => await repo.StashAllAsync(false)));
             _cmds.Add(new("Apply.Title", "apply", "ApplyPatch", () => repo.ApplyPatch()));
             _cmds.Add(new("Repository.DiscardAll", "discard", "Undo", () => repo.WorkingCopy.DiscardAllChanges()));

@@ -986,6 +986,9 @@
   <x:String x:Key="Text.SubmoduleRevisionCompare" xml:space="preserve">Submodule Change Details</x:String>
   <x:String x:Key="Text.SubmoduleRevisionCompare.OpenDetails" xml:space="preserve">OPEN DETAILS</x:String>
   <x:String x:Key="Text.Sure" xml:space="preserve">OK</x:String>
+  <x:String x:Key="Text.Sync.Description" xml:space="preserve">Pull from the upstream branch, then push local commits to it. If pulling fails or leaves conflicts, Sync stops before pushing.</x:String>
+  <x:String x:Key="Text.Sync.StashLocalChanges" xml:space="preserve">Stash and reapply local changes</x:String>
+  <x:String x:Key="Text.Sync.Title" xml:space="preserve">Sync (Pull then Push)</x:String>
   <x:String x:Key="Text.Tag.Tagger" xml:space="preserve">TAGGER</x:String>
   <x:String x:Key="Text.Tag.Time" xml:space="preserve">TIME</x:String>
   <x:String x:Key="Text.TagCM.Checkout" xml:space="preserve">Checkout Tag...</x:String>

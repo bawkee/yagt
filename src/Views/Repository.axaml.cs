@@ -2,6 +2,7 @@ using System;
 
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
@@ -242,13 +243,34 @@ namespace SourceGit.Views
                 UpdateLeftSidebarLayout();
         }
 
+        private void OnHistoryLayoutPropertyChanged(object _, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Property == RepositoryLayout.UseHorizontalProperty ||
+                e.Property == RepositoryLayout.UseWideDetailsProperty ||
+                e.Property == RepositoryLayout.IsDashboardVisibleProperty)
+                UpdateLeftSidebarLayout();
+        }
+
         private void UpdateLeftSidebarLayout()
         {
-            if (!IsLoaded || _isCommitSearchPanelVisible)
+            if (!IsLoaded)
+                return;
+
+            var wide = MainBody.IsWideDetailsActive;
+            SidebarScroller.VerticalScrollBarVisibility = wide ? ScrollBarVisibility.Auto : ScrollBarVisibility.Disabled;
+            SidebarHost.Height = wide ? Math.Max(SidebarScroller.Bounds.Height, _isCommitSearchPanelVisible ? 300 : 0) : double.NaN;
+
+            if (_isCommitSearchPanelVisible)
                 return;
 
             if (DataContext is not ViewModels.Repository { UIStates: { } } vm)
                 return;
+
+            if (wide && _isNormalSidebarVisible)
+            {
+                UpdateWideSidebarLayout(vm);
+                return;
+            }
 
             var leftHeight = LeftSidebarGroups.Bounds.Height - 28.0 * 5 - 4;
             if (leftHeight <= 0)
@@ -361,6 +383,38 @@ namespace SourceGit.Views
                     var height = remoteBranchRows * 24;
                     RemoteBranchTree.Height = height;
                 }
+            }
+        }
+
+        private void UpdateWideSidebarLayout(ViewModels.Repository vm)
+        {
+            var desired = new[]
+            {
+                vm.IsLocalBranchGroupExpanded ? LocalBranchTree.Rows.Count * 24.0 : 0,
+                vm.IsRemoteGroupExpanded ? RemoteBranchTree.Rows.Count * 24.0 : 0,
+                vm.IsTagGroupExpanded ? TagsList.Rows * 24.0 : 0,
+                vm.IsSubmoduleGroupExpanded ? SubmoduleList.Rows * 24.0 : 0,
+                vm.IsWorktreeGroupExpanded ? vm.Worktrees.Count * 24.0 : 0,
+            };
+            var lists = new Control[] { LocalBranchTree, RemoteBranchTree, TagsList, SubmoduleList, WorktreeList };
+            var minimum = 0.0;
+            var total = 0.0;
+            foreach (var height in desired)
+            {
+                minimum += Math.Min(height, 120);
+                total += height;
+            }
+
+            // Keep each expanded list usable when details leave little room above.
+            // The outer scroller handles the overflow; each list still has a finite viewport.
+            var chrome = 30.0 + 28.0 * 5 + 4;
+            SidebarHost.Height = Math.Max(SidebarScroller.Bounds.Height, chrome + minimum);
+            var available = SidebarHost.Height - chrome;
+            var scale = total > minimum ? Math.Min(1, (available - minimum) / (total - minimum)) : 0;
+            for (var i = 0; i < lists.Length; i++)
+            {
+                var minHeight = Math.Min(desired[i], 120);
+                lists[i].Height = minHeight + (desired[i] - minHeight) * scale;
             }
         }
 
@@ -528,6 +582,8 @@ namespace SourceGit.Views
                 SidebarMinWidth = 0;
                 SidebarWidth = new GridLength(0, GridUnitType.Pixel);
             }
+
+            UpdateLeftSidebarLayout();
         }
 
         private bool _isNormalSidebarVisible = true;

@@ -16,73 +16,6 @@ using Avalonia.VisualTree;
 
 namespace SourceGit.Views
 {
-    public class HistoriesLayout : Grid
-    {
-        public static readonly DirectProperty<HistoriesLayout, bool> UseHorizontalProperty =
-            AvaloniaProperty.RegisterDirect<HistoriesLayout, bool>(
-                nameof(UseHorizontal),
-                static o => o.UseHorizontal,
-                static (o, v) => o.UseHorizontal = v);
-
-        public bool UseHorizontal
-        {
-            get => _useHorizontal;
-            set => SetAndRaise(UseHorizontalProperty, ref _useHorizontal, value);
-        }
-
-        protected override Type StyleKeyOverride => typeof(Grid);
-
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-        {
-            base.OnPropertyChanged(change);
-
-            if (change.Property == UseHorizontalProperty && IsLoaded)
-                RefreshLayout();
-        }
-
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            base.OnAttachedToVisualTree(e);
-            RefreshLayout();
-        }
-
-        private void RefreshLayout()
-        {
-            if (UseHorizontal)
-            {
-                var rowSpan = RowDefinitions.Count;
-                for (int i = 0; i < Children.Count; i++)
-                {
-                    var child = Children[i];
-                    child.SetValue(RowProperty, 0);
-                    child.SetValue(RowSpanProperty, rowSpan);
-                    child.SetValue(ColumnProperty, i);
-                    child.SetValue(ColumnSpanProperty, 1);
-
-                    if (child is GridSplitter splitter)
-                        splitter.BorderThickness = new Thickness(1, 0, 0, 0);
-                }
-            }
-            else
-            {
-                var colSpan = ColumnDefinitions.Count;
-                for (int i = 0; i < Children.Count; i++)
-                {
-                    var child = Children[i];
-                    child.SetValue(RowProperty, i);
-                    child.SetValue(RowSpanProperty, 1);
-                    child.SetValue(ColumnProperty, 0);
-                    child.SetValue(ColumnSpanProperty, colSpan);
-
-                    if (child is GridSplitter splitter)
-                        splitter.BorderThickness = new Thickness(0, 1, 0, 0);
-                }
-            }
-        }
-
-        private bool _useHorizontal = false;
-    }
-
     public class HistoriesCommitList : DataGrid
     {
         public static readonly DirectProperty<HistoriesCommitList, int> TotalCommitsProperty =
@@ -357,18 +290,6 @@ namespace SourceGit.Views
             set => SetAndRaise(IsScrollToTopVisibleProperty, ref _isScrollToTopVisible, value);
         }
 
-        public static readonly DirectProperty<Histories, bool> IsDetailsPanelExpandedProperty =
-            AvaloniaProperty.RegisterDirect<Histories, bool>(
-                nameof(IsDetailsPanelExpanded),
-                static o => o.IsDetailsPanelExpanded,
-                static (o, v) => o.IsDetailsPanelExpanded = v);
-
-        public bool IsDetailsPanelExpanded
-        {
-            get => _isDetailsPanelExpanded;
-            set => SetAndRaise(IsDetailsPanelExpandedProperty, ref _isDetailsPanelExpanded, value);
-        }
-
         public Histories()
         {
             InitializeComponent();
@@ -550,11 +471,22 @@ namespace SourceGit.Views
 
             var vertical = new MenuItem();
             vertical.Header = App.Text("Repository.HistoriesLayout.Vertical");
-            if (!isHorizontal)
+            if (!isHorizontal && !pref.UseWideDetailsLayoutInHistories)
                 vertical.Icon = this.CreateMenuIcon("Icons.Check");
             vertical.Click += (_, ev) =>
             {
                 pref.UseTwoColumnsLayoutInHistories = false;
+                pref.UseWideDetailsLayoutInHistories = false;
+                ev.Handled = true;
+            };
+
+            var wideDetails = new MenuItem();
+            wideDetails.Header = App.Text("Repository.HistoriesLayout.WideDetails");
+            if (pref.UseWideDetailsLayoutInHistories)
+                wideDetails.Icon = this.CreateMenuIcon("Icons.Check");
+            wideDetails.Click += (_, ev) =>
+            {
+                pref.UseWideDetailsLayoutInHistories = true;
                 ev.Handled = true;
             };
 
@@ -734,6 +666,7 @@ namespace SourceGit.Views
             menu.Items.Add(layout);
             menu.Items.Add(horizontal);
             menu.Items.Add(vertical);
+            menu.Items.Add(wideDetails);
             menu.Items.Add(new MenuItem() { Header = "-" });
             menu.Items.Add(showFlags);
             menu.Items.Add(reflog);
@@ -866,39 +799,6 @@ namespace SourceGit.Views
         {
             // Force-update the graph layout to ensure the graph is correctly rendered when it's loaded.
             OnCommitListLayoutUpdated(sender, e);
-        }
-
-        private void OnTabHeaderPointerPressed(object sender, PointerPressedEventArgs e)
-        {
-            if (ViewModels.Preferences.Instance.UseTwoColumnsLayoutInHistories)
-                return;
-
-            if (DataContext is not ViewModels.Histories vm)
-                return;
-
-            if (vm.IsCollapseDetails)
-                vm.IsCollapseDetails = false;
-        }
-
-        private void OnOpenDetailsAsStandalone(object sender, RoutedEventArgs e)
-        {
-            if (DataContext is ViewModels.Histories vm)
-            {
-                if (vm.DetailContext is ViewModels.CommitDetail detail)
-                {
-                    var standalone = new CommitDetailStandalone();
-                    standalone.DataContext = detail.Clone();
-                    this.ShowWindow(standalone);
-                }
-                else if (vm.DetailContext is ViewModels.RevisionCompare compare)
-                {
-                    var standalone = new RevisionCompareStandalone();
-                    standalone.DataContext = compare.Clone();
-                    this.ShowWindow(standalone);
-                }
-            }
-
-            e.Handled = true;
         }
 
         private ContextMenu CreateContextMenuForMultipleCommits(ViewModels.Repository repo, List<Models.Commit> selected)
@@ -1980,7 +1880,6 @@ namespace SourceGit.Views
         private bool _hasSingleRemote = false;
         private AvaloniaList<Models.IssueTracker> _issueTrackers = null;
         private bool _isScrollToTopVisible = false;
-        private bool _isDetailsPanelExpanded = true;
         private bool _resizingAuthorColumn = false;
         private Cursor _resizingCursor = new(StandardCursorType.SizeWestEast);
     }

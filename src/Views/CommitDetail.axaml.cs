@@ -333,7 +333,7 @@ namespace SourceGit.Views
             if (ViewModels.Preferences.Instance.UseTwoColumnsLayoutInHistories)
                 return;
 
-            var historiesView = this.FindAncestorOfType<Histories>();
+            var historiesView = this.FindAncestorOfType<HistoriesDetails>();
             if (historiesView is not { DataContext: ViewModels.Histories vm })
                 return;
 

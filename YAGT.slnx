@@ -55,6 +55,10 @@
 		<Project Path="src/YAGT.csproj" />
 	</Folder>
 
+	<Folder Name="/tests/">
+		<Project Path="tests/LayoutChecks/LayoutChecks.csproj" />
+	</Folder>
+
 	<Folder Name="/files/">
 		<File Path=".editorconfig"/>
 		<File Path=".gitattributes"/>

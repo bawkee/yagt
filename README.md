@@ -204,6 +204,8 @@ You can define your own conventional commit types (per-repository) by following 
 
 Everyone is welcome to submit a PR against this fork’s `master` branch. Changes intended for upstream SourceGit should target its `develop` branch.
 
+See [DEVELOPMENT.md](DEVELOPMENT.md) for prerequisites, local builds, release builds, and maintenance checks.
+
 This project has a submodule in `depends/AvaloniaEdit` which is a custom fork of [Official AvaloniaEdit](https://github.com/AvaloniaUI/AvaloniaEdit). 
 Please make sure it is initialized - enable `--recurse-submodules` option while cloning or run `git submodule update --init` after cloned.
 

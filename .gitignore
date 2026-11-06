@@ -25,6 +25,7 @@ ehthumbs_vista.db
 bin/
 obj/
 /artifacts/
+/.dotnet/
 # ignore ci node files
 node_modules/
 package.json

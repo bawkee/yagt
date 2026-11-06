@@ -1,2 +1,2 @@
-Remove-Item -Path build\SourceGit\*.pdb -Force
-Compress-Archive -Path build\SourceGit -DestinationPath "build\sourcegit_${env:VERSION}.${env:RUNTIME}.zip" -Force
+Remove-Item -Path build\YAGT\*.pdb -Force
+Compress-Archive -Path build\YAGT -DestinationPath "build\yagt_${env:VERSION}.${env:RUNTIME}.zip" -Force

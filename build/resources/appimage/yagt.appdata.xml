@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-    <id>com.sourcegit_scm.SourceGit</id>
+    <id>io.github.bawkee.yagt</id>
     <metadata_license>MIT</metadata_license>
     <project_license>MIT</project_license>
-    <name>SourceGit</name>
-    <summary>Open-source and Free Git GUI Client</summary>
+    <name>YAGT</name>
+    <summary>Yet Another Git Tool</summary>
     <description>
         <p>Highlights</p>
         <ul>
@@ -46,13 +46,13 @@
             <li>Using AI to generate commit message using commitollama</li>
         </ul>
     </description>
-    <url type="bugtracker">https://github.com/sourcegit-scm/sourcegit/issues</url>
-    <url type="help">https://github.com/sourcegit-scm/sourcegit/issues</url>
-    <url type="homepage">https://sourcegit-scm.github.io</url>
-    <url type="vcs-browser">https://github.com/sourcegit-scm/sourcegit</url>
-    <launchable type="desktop-id">com.sourcegit_scm.SourceGit.desktop</launchable>
+    <url type="bugtracker">https://github.com/bawkee/yagt/issues</url>
+    <url type="help">https://github.com/bawkee/yagt/issues</url>
+    <url type="homepage">https://github.com/bawkee/yagt</url>
+    <url type="vcs-browser">https://github.com/bawkee/yagt</url>
+    <launchable type="desktop-id">io.github.bawkee.yagt.desktop</launchable>
     <developer id="io.github">
-        <name>sourcegit-scm</name>
+        <name>YAGT contributors</name>
     </developer>
     <branding>
         <color type="primary" scheme_preference="light">#f15336</color>
@@ -60,11 +60,11 @@
     </branding>
     <screenshots>
         <screenshot type="default">
-            <image>https://sourcegit-scm.github.io/images/theme_dark.png</image>
+            <image>https://raw.githubusercontent.com/bawkee/yagt/master/screenshots/theme_dark.png</image>
             <caption>Dark Theme</caption>
         </screenshot>
         <screenshot>
-            <image>https://sourcegit-scm.github.io/images/theme_light.png</image>
+            <image>https://raw.githubusercontent.com/bawkee/yagt/master/screenshots/theme_light.png</image>
             <caption>Light Theme</caption>
         </screenshot>
     </screenshots>

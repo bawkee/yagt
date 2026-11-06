@@ -32,7 +32,7 @@ namespace SourceGit.Commands
             else
             {
                 var cmd = $"{tool.Exec.Quoted()} {tool.Cmd}";
-                Args = $"-c mergetool.sourcegit.cmd={cmd.Quoted()} -c mergetool.writeToTemp=true -c mergetool.keepBackup=false -c mergetool.trustExitCode=true mergetool --tool=sourcegit {_file}";
+                Args = $"-c mergetool.yagt.cmd={cmd.Quoted()} -c mergetool.writeToTemp=true -c mergetool.keepBackup=false -c mergetool.trustExitCode=true mergetool --tool=yagt {_file}";
             }
 
             return await ExecAsync().ConfigureAwait(false);

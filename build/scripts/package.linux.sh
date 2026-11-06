@@ -35,32 +35,32 @@ if [[ ! -f "appimagetool" ]]; then
     chmod +x appimagetool
 fi
 
-rm -f SourceGit/*.dbg
-rm -f SourceGit/*.pdb
+rm -f YAGT/*.dbg
+rm -f YAGT/*.pdb
 
-mkdir -p SourceGit.AppDir/opt
-mkdir -p SourceGit.AppDir/usr/share/metainfo
-mkdir -p SourceGit.AppDir/usr/share/applications
+mkdir -p YAGT.AppDir/opt
+mkdir -p YAGT.AppDir/usr/share/metainfo
+mkdir -p YAGT.AppDir/usr/share/applications
 
-cp -r SourceGit SourceGit.AppDir/opt/sourcegit
-desktop-file-install resources/_common/applications/sourcegit.desktop --dir SourceGit.AppDir/usr/share/applications \
-    --set-icon com.sourcegit_scm.SourceGit --set-key=Exec --set-value=AppRun
-mv SourceGit.AppDir/usr/share/applications/{sourcegit,com.sourcegit_scm.SourceGit}.desktop
-cp resources/_common/icons/sourcegit.png SourceGit.AppDir/com.sourcegit_scm.SourceGit.png
-ln -rsf SourceGit.AppDir/opt/sourcegit/sourcegit SourceGit.AppDir/AppRun
-ln -rsf SourceGit.AppDir/usr/share/applications/com.sourcegit_scm.SourceGit.desktop SourceGit.AppDir
-cp resources/appimage/sourcegit.appdata.xml SourceGit.AppDir/usr/share/metainfo/com.sourcegit_scm.SourceGit.appdata.xml
+cp -r YAGT YAGT.AppDir/opt/yagt
+desktop-file-install resources/_common/applications/yagt.desktop --dir YAGT.AppDir/usr/share/applications \
+    --set-icon io.github.bawkee.yagt --set-key=Exec --set-value=AppRun
+mv YAGT.AppDir/usr/share/applications/{yagt,io.github.bawkee.yagt}.desktop
+cp resources/_common/icons/yagt.png YAGT.AppDir/io.github.bawkee.yagt.png
+ln -rsf YAGT.AppDir/opt/yagt/yagt YAGT.AppDir/AppRun
+ln -rsf YAGT.AppDir/usr/share/applications/io.github.bawkee.yagt.desktop YAGT.AppDir
+cp resources/appimage/yagt.appdata.xml YAGT.AppDir/usr/share/metainfo/io.github.bawkee.yagt.appdata.xml
 
 ARCH="$appimage_arch" ./appimagetool -v \
-    -u "gh-releases-zsync|sourcegit-scm|sourcegit|latest|sourcegit-*.linux.$arch.AppImage.zsync" \
-    SourceGit.AppDir "sourcegit-$VERSION.linux.$arch.AppImage"
+    -u "gh-releases-zsync|bawkee|yagt|latest|yagt-*.linux.$arch.AppImage.zsync" \
+    YAGT.AppDir "yagt-$VERSION.linux.$arch.AppImage"
 
-mkdir -p resources/deb/opt/sourcegit/
+mkdir -p resources/deb/opt/yagt/
 mkdir -p resources/deb/usr/bin
 mkdir -p resources/deb/usr/share/applications
 mkdir -p resources/deb/usr/share/icons
-cp -f SourceGit/* resources/deb/opt/sourcegit
-ln -rsf resources/deb/opt/sourcegit/sourcegit resources/deb/usr/bin
+cp -f YAGT/* resources/deb/opt/yagt
+ln -rsf resources/deb/opt/yagt/yagt resources/deb/usr/bin
 cp -r resources/_common/applications resources/deb/usr/share
 cp -r resources/_common/icons resources/deb/usr/share
 
@@ -82,7 +82,7 @@ sed -i -e "s/^Version:.*/Version: $VERSION/" \
     resources/deb/DEBIAN/control
 
 # Build deb package with gzip compression
-dpkg-deb -Zgzip --root-owner-group --build resources/deb "sourcegit_$VERSION-1_$arch.deb"
+dpkg-deb -Zgzip --root-owner-group --build resources/deb "yagt_$VERSION-1_$arch.deb"
 
 rpmbuild -bb --target="$target" resources/rpm/SPECS/build.spec --define "_topdir $(pwd)/resources/rpm" --define "_version $VERSION"
-mv "resources/rpm/RPMS/$target/sourcegit-$VERSION-1.$target.rpm" ./
+mv "resources/rpm/RPMS/$target/yagt-$VERSION-1.$target.rpm" ./

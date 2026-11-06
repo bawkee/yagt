@@ -1,12 +1,16 @@
-# Yet Another Git Client
+# YAGT — Yet Another Git Tool
 
-[![stars](https://img.shields.io/github/stars/sourcegit-scm/sourcegit.svg)](https://github.com/sourcegit-scm/sourcegit/stargazers)
-[![forks](https://img.shields.io/github/forks/sourcegit-scm/sourcegit.svg)](https://github.com/sourcegit-scm/sourcegit/forks)
-[![license](https://img.shields.io/github/license/sourcegit-scm/sourcegit.svg)](LICENSE)
-[![latest](https://img.shields.io/github/v/release/sourcegit-scm/sourcegit.svg)](https://github.com/sourcegit-scm/sourcegit/releases/latest)
-[![downloads](https://img.shields.io/github/downloads/sourcegit-scm/sourcegit/total)](https://github.com/sourcegit-scm/sourcegit/releases)
+[![stars](https://img.shields.io/github/stars/bawkee/yagt.svg)](https://github.com/bawkee/yagt/stargazers)
+[![forks](https://img.shields.io/github/forks/bawkee/yagt.svg)](https://github.com/bawkee/yagt/forks)
+[![license](https://img.shields.io/github/license/bawkee/yagt.svg)](LICENSE)
+[![latest](https://img.shields.io/github/v/release/bawkee/yagt.svg)](https://github.com/bawkee/yagt/releases/latest)
+[![downloads](https://img.shields.io/github/downloads/bawkee/yagt/total)](https://github.com/bawkee/yagt/releases)
+
+YAGT is an independent fork of [SourceGit](https://github.com/sourcegit-scm/sourcegit), a cross-platform Git GUI. It builds on upstream’s work with improvements for large, busy repositories and AI-assisted daily work. YAGT releases and support are maintained in this repository.
 
 ## Screenshots
+
+These screenshots show the interface inherited from SourceGit.
 
 * Dark Theme
 
@@ -68,100 +72,38 @@
 
 **To use this tool, you need to install Git(>=2.25.1) first.**
 
-You can download the latest stable from [Releases](https://github.com/sourcegit-scm/sourcegit/releases/latest) or download workflow artifacts from [GitHub Actions](https://github.com/sourcegit-scm/sourcegit/actions) to try this app based on latest commits.
+You can download the latest stable from [Releases](https://github.com/bawkee/yagt/releases/latest) or download workflow artifacts from [GitHub Actions](https://github.com/bawkee/yagt/actions) to try this app based on latest commits.
 
 This software creates a folder, which is platform-dependent, to store user settings, downloaded avatars and crash logs.
 
-| OS      | PATH                                                                                             |
-|---------|--------------------------------------------------------------------------------------------------|
-| Windows | `%APPDATA%\SourceGit`                                                                            |
-| Linux   | `${XDG_CONFIG_HOME}/SourceGit` (preference.json) `${XDG_CACHE_HOME}/SourceGit` (avatars & logs)  |
-| macOS   | `~/Library/Application Support/SourceGit`                                                        |
+| OS      | PATH                                                                                           |
+|---------|------------------------------------------------------------------------------------------------|
+| Windows | `%APPDATA%\YAGT`                                                                                |
+| Linux   | `${XDG_CONFIG_HOME}/YAGT` (preferences), `${XDG_CACHE_HOME}/YAGT` (avatars & logs)                  |
+| macOS   | `~/Library/Application Support/YAGT`                                                            |
 
 > [!TIP]
 > * You can open this data storage directory from the main menu `Open Data Storage Directory`.
-> * You can create a `data` folder next to the `SourceGit` executable to force this app to store data (user settings, downloaded avatars and crash logs) into it (Portable-Mode). Only works with Windows packages and Linux AppImages.
+> * You can create a `data` folder next to the `YAGT` executable to force this app to store data (user settings, downloaded avatars and crash logs) into it (Portable-Mode). Only works with Windows packages and Linux AppImages.
 
-For **Windows** users:
+YAGT uses its own settings and cache directories, so it can be installed alongside SourceGit. On first launch, it copies existing SourceGit configuration if the YAGT directory does not exist; the original files are left intact. Portable mode continues to use the adjacent `data` folder. Repository metadata (`sourcegit.settings`, `sourcegit.uistates`, `sourcegit.node`, and `sourcegit.interactive_rebase`) keeps its upstream names for compatibility.
 
-* **MSYS Git is NOT supported**. Please use official [Git for Windows](https://git-scm.com/download/win) instead.
-* You can install the latest stable by `scoop` with follow commands:
-  ```shell
-  scoop bucket add extras
-  scoop install sourcegit
-  ```
-* Pre-built binaries can be found in [Releases](https://github.com/sourcegit-scm/sourcegit/releases/latest)
+For **Windows**, install [Git for Windows](https://git-scm.com/download/win) and run `YAGT.exe` from a YAGT release or local build. MSYS Git is not supported.
 
-> [!NOTE]
-> `git-flow` is no longer shipped with **Git for Windows** since `2.51.1`. You can use it by following these steps:
->  * Download [git-flow-next](https://github.com/gittower/git-flow-next/releases)
->  * Unzip & Rename the `git-flow-next` to `git-flow`
->  * Copy to `$GIT_INSTALL_DIR/cmd` or just add its path to you `PATH` directly
+For **macOS**, install Git (for example, through Xcode Command Line Tools) and place `YAGT.app` in Applications. Custom PATH settings can be stored in `~/Library/Application Support/YAGT/PATH`.
 
-For **macOS** users:
+For **Linux**, use YAGT's AppImage, Debian, or RPM packages when available. Install `xdg-utils` for native file-manager integration. The packaged Linux executable is named `yagt`.
 
-* Thanks [@ybeapps](https://github.com/ybeapps) for making `SourceGit` available on `Homebrew`:
-  ```shell
-  brew install --cask sourcegit
-  ```
-* If you want to install `SourceGit.app` from GitHub Release manually, you need run following command to make sure it works:
-  ```shell
-  sudo xattr -cr /Applications/SourceGit.app
-  ```
-> [!NOTE]
-> macOS packages in the `Release` page of this project are all unsigned. If you are worried about potential security issues with the above command, you can download the signed package from the [distribution repository](https://github.com/ybeapps/homebrew-sourcegit/releases) provided by [@ybeapps](https://github.com/ybeapps) (there is no need to execute the above command while installing `SourceGit`).
-
-* Make sure [git-credential-manager](https://github.com/git-ecosystem/git-credential-manager/releases) is installed on your mac.
-* You can run `echo $PATH > ~/Library/Application\ Support/SourceGit/PATH` to generate a custom PATH env file to introduce `PATH` env to SourceGit.
-
-For **Linux** users:
-
-* Thanks [@aikawayataro](https://github.com/aikawayataro) for providing `rpm` and `deb` repositories, hosted on [Codeberg](https://codeberg.org/yataro/-/packages).
-
-  `deb` how to:
-  ```shell
-  sudo mkdir -p /etc/apt/keyrings
-  curl https://codeberg.org/api/packages/yataro/debian/repository.key | sudo tee /etc/apt/keyrings/sourcegit.asc
-  echo "deb [signed-by=/etc/apt/keyrings/sourcegit.asc, arch=amd64,arm64] https://codeberg.org/api/packages/yataro/debian generic main" | sudo tee /etc/apt/sources.list.d/sourcegit.list
-  sudo apt update
-  sudo apt install sourcegit
-  ```
-
-  `rpm` how to:
-  ```shell
-  curl https://codeberg.org/api/packages/yataro/rpm.repo | sed -e 's/gpgcheck=1/gpgcheck=0/' > sourcegit.repo
-
-  # Fedora 41 and newer
-  sudo dnf config-manager addrepo --from-repofile=./sourcegit.repo
-  # Fedora 40 and earlier
-  sudo dnf config-manager --add-repo ./sourcegit.repo
-
-  sudo dnf install sourcegit
-  ```
-
-  If your distribution isn't using `dnf`, please refer to the documentation of your distribution on how to add an `rpm` repository.
-
-* `AOSC OS`: In addition to AMD64 and ARM64, support for LoongArch and RISC-V has been added.
-  ```shell
-  sudo oma install sourcegit
-  ```
-  
-> [!NOTE]
-> RISC-V support is untested.
-
-* `AppImage` files can be found on [AppImage hub](https://appimage.github.io/SourceGit/), `xdg-open` (`xdg-utils`) must be installed to support open native file manager.
-* Make sure [git-credential-manager](https://github.com/git-ecosystem/git-credential-manager/releases) or [git-credential-libsecret](https://pkgs.org/search/?q=git-credential-libsecret) is installed on your Linux.
-* Maybe you need to set environment variable `AVALONIA_SCREEN_SCALE_FACTORS`. See https://github.com/AvaloniaUI/Avalonia/wiki/Configuring-X11-per-monitor-DPI.
-* If you can NOT type accented characters, such as `ê`, `ó`, try to set the environment variable `AVALONIA_IM_MODULE` to `none`.
+The existing SourceGit Homebrew, Scoop, distribution, and Flatpak listings distribute upstream SourceGit. Use this repository's releases or [build YAGT locally](build/README.md) to get this fork.
 
 ## Commandline arguments
 
-Users can also launcher `SourceGit` from commandline. Usage:
+Users can also launch `YAGT` from commandline. Usage:
 
 ```
-<SOURCEGIT_EXEC> <DIR>                       // Open repository in existing `SourceGit` instance or a new one
-<SOURCEGIT_EXEC> --history <FILE_OR_DIR>     // Launch `SourceGit` to see the history of a file or dir
-<SOURCEGIT_EXEC> --blame <FILE_PATH>         // Launch `SourceGit` to blame a file (HEAD version only) 
+<YAGT_EXEC> <DIR>                       // Open repository in existing `YAGT` instance or a new one
+<YAGT_EXEC> --history <FILE_OR_DIR>     // Launch `YAGT` to see the history of a file or dir
+<YAGT_EXEC> --blame <FILE_PATH>         // Launch `YAGT` to blame a file (HEAD version only)
 ```
 
 ## OpenAI
@@ -260,7 +202,7 @@ You can define your own conventional commit types (per-repository) by following 
 
 ## Contributing
 
-Everyone is welcome to submit a PR. Please make sure your PR is based on the latest `develop` branch and the target branch of PR is `develop`.
+Everyone is welcome to submit a PR against this fork’s `master` branch. Changes intended for upstream SourceGit should target its `develop` branch.
 
 This project has a submodule in `depends/AvaloniaEdit` which is a custom fork of [Official AvaloniaEdit](https://github.com/AvaloniaUI/AvaloniaEdit). 
 Please make sure it is initialized - enable `--recurse-submodules` option while cloning or run `git submodule update --init` after cloned.
@@ -271,16 +213,14 @@ In short, here are the commands to get started once [.NET tools are installed](h
 dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org
 dotnet restore
 dotnet build
-dotnet run --project src/SourceGit.csproj
+dotnet run --project src/YAGT.csproj
 ```
 
-Thanks to all the people who contribute.
-
-[![Contributors](https://contrib.rocks/image?repo=sourcegit-scm/sourcegit&columns=20)](https://github.com/sourcegit-scm/sourcegit/graphs/contributors)
+Thanks to the [YAGT contributors](https://github.com/bawkee/yagt/graphs/contributors) and the [SourceGit authors and contributors](https://github.com/sourcegit-scm/sourcegit/graphs/contributors) whose work makes this fork possible. The original MIT copyright notice is retained in [LICENSE](LICENSE).
 
 ## Translation Status
 
-You can find the current translation status in [TRANSLATION.md](https://github.com/sourcegit-scm/sourcegit/blob/develop/TRANSLATION.md)
+You can find the current translation status in [TRANSLATION.md](TRANSLATION.md)
 
 ### Translate Utility Script
 

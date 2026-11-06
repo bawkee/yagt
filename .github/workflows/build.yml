@@ -64,18 +64,18 @@ jobs:
       - name: Build
         run: dotnet build -c Release
       - name: Publish
-        run: dotnet publish src/SourceGit.csproj -c Release -o publish -r ${{ matrix.runtime }}
+        run: dotnet publish src/YAGT.csproj -c Release -o publish -r ${{ matrix.runtime }}
       - name: Rename executable file
         if: startsWith(matrix.runtime, 'linux-')
-        run: mv publish/SourceGit publish/sourcegit
+        run: mv publish/YAGT publish/yagt
       - name: Tar artifact
         if: startsWith(matrix.runtime, 'linux-') || startsWith(matrix.runtime, 'osx-')
         run: |
-          tar -cvf "sourcegit.${{ matrix.runtime }}.tar" -C publish .
+          tar -cvf "yagt.${{ matrix.runtime }}.tar" -C publish .
           rm -r publish/*
-          mv "sourcegit.${{ matrix.runtime }}.tar" publish
+          mv "yagt.${{ matrix.runtime }}.tar" publish
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          name: sourcegit.${{ matrix.runtime }}
+          name: yagt.${{ matrix.runtime }}
           path: publish/*

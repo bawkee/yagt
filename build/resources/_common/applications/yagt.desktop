@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=YAGT
+Comment=Yet Another Git Tool
+Exec=/opt/yagt/yagt %u
+Icon=/usr/share/icons/yagt.png
+Terminal=false
+Type=Application
+Categories=Development
+MimeType=inode/directory;

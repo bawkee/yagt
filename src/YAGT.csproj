@@ -9,13 +9,15 @@
     <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
     <InvariantGlobalization>false</InvariantGlobalization>
 
-    <Product>SourceGit</Product>
-    <Description>OpenSource GIT client</Description>
-    <Company>sourcegit-scm</Company>
-    <Copyright>Copyright © $([System.DateTime]::Now.Year) sourcegit-scm.</Copyright>
+    <AssemblyName>YAGT</AssemblyName>
+    <RootNamespace>SourceGit</RootNamespace>
+    <Product>YAGT — Yet Another Git Tool</Product>
+    <Description>Yet Another Git Tool — a cross-platform Git GUI based on SourceGit</Description>
+    <Company>YAGT contributors</Company>
+    <Copyright>Copyright © $([System.DateTime]::Now.Year) YAGT contributors; includes work by sourcegit-scm.</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/sourcegit-scm/sourcegit.git</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/sourcegit-scm/sourcegit.git</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/bawkee/yagt.git</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/bawkee/yagt.git</RepositoryUrl>
     <RepositoryType>Public</RepositoryType>
   </PropertyGroup>
 
@@ -65,7 +67,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <TrimmerRootAssembly Include="SourceGit" />
+    <TrimmerRootAssembly Include="YAGT" />
     <TrimmerRootAssembly Include="Avalonia.Themes.Fluent" />
   </ItemGroup>
 

@@ -61,7 +61,7 @@ Where graphics come from and how to add new ones.
 1. Convert monochrome brand marks to `Icons.Logo.<Brand>`. [Simple Icons](https://simpleicons.org) (CC0) is a good source. Logos are still their owners' trademarks, so use them only to identify the tool.
 2. Add a geometry-key property next to the existing `Bitmap` property.
 3. Switch the views to `<Path Width="16" Height="16">`. Logos render in `FG1` like every other icon.
-4. Delete the PNGs, the loader, and the matching `AvaloniaResource` glob in `src/SourceGit.csproj`. The globs are per folder and non-recursive.
+4. Delete the PNGs, the loader, and the matching `AvaloniaResource` glob in `src/YAGT.csproj`. The globs are per folder and non-recursive.
 
 Upstream adds new tool and terminal PNGs regularly. When merging upstream, convert any new ones rather than keeping them. Avatars come last: they need a geometry rendered into a `Bitmap`.
 
@@ -71,6 +71,6 @@ Upstream adds new tool and terminal PNGs regularly. When merging upstream, conve
 |---|---|
 | `src/App.ico` | Windows executable (`ApplicationIcon` in the csproj), and window or `About` icons via `/App.ico` |
 | `build/resources/app/App.icns` | macOS app bundle |
-| `build/resources/_common/icons/sourcegit.png` | Linux `.desktop` file and AppImage |
+| `build/resources/_common/icons/yagt.png` | Linux `.desktop` file and AppImage |
 
 These files belong to upstream's identity (see the root fork policy), so leave them alone. If they ever have to change, add an SVG master next to them and regenerate all three from it.

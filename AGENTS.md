@@ -1,6 +1,6 @@
 # AGENTS.md
 
-YAGT ("Yet Another Git Client") is a public fork of [SourceGit](https://github.com/sourcegit-scm/sourcegit), a cross-platform git GUI built with C# / .NET 10 / Avalonia 11. The fork adds features for large, busy repositories (hundreds of branches, heavy history) and AI-assisted daily work. Everything here stays generic. Nothing in it is specific to any organization.
+YAGT ("Yet Another Git Tool") is a public fork of [SourceGit](https://github.com/sourcegit-scm/sourcegit), a cross-platform git GUI built with C# / .NET 10 / Avalonia 11. The fork adds features for large, busy repositories (hundreds of branches, heavy history) and AI-assisted daily work. Everything here stays generic. Nothing in it is specific to any organization.
 
 ## Core principles (keep these when changing anything)
 
@@ -16,13 +16,13 @@ YAGT ("Yet Another Git Client") is a public fork of [SourceGit](https://github.c
 ```sh
 git submodule update --init                              # depends/AvaloniaEdit (a fork) is required
 dotnet build                                             # whole solution
-dotnet run --project src/SourceGit.csproj
-dotnet format --verify-no-changes src/SourceGit.csproj   # CI gate (.editorconfig); run `dotnet format` to fix
+dotnet run --project src/YAGT.csproj
+dotnet format --verify-no-changes src/YAGT.csproj   # CI gate (.editorconfig); run `dotnet format` to fix
 python skills/ui-theme-and-styles/scripts/check_resources.py   # catches resource-key typos the compiler can't see
 ```
 
 - There is no unit-test project. Verify a change by building and running the app.
-- Treat new trim/AOT warnings from `dotnet publish src/SourceGit.csproj -c Release -r <rid>` as errors.
+- Treat new trim/AOT warnings from `dotnet publish src/YAGT.csproj -c Release -r <rid>` as errors.
 
 ## Architecture (namespace = folder, `SourceGit.<Folder>`)
 
@@ -42,7 +42,7 @@ python skills/ui-theme-and-styles/scripts/check_resources.py   # catches resourc
 
 ## Hard rules
 
-- **AOT and trimming.** Serialize JSON only through the source-generated `JsonCodeGen` (`App.JsonCodeGen.cs`), and add a `[JsonSerializable]` entry for every new persisted type. Write regexes as `[GeneratedRegex]` members of a `partial` class, named like `REG_FORMAT()`. Don't add reflection (`Activator`, `Type.GetType`, `GetMethod`…). The only sanctioned use is the ViewModel→View lookup in `ControlExtensions.CreateFromViewModels`, which works because `SourceGit` is a `TrimmerRootAssembly`.
+- **AOT and trimming.** Serialize JSON only through the source-generated `JsonCodeGen` (`App.JsonCodeGen.cs`), and add a `[JsonSerializable]` entry for every new persisted type. Write regexes as `[GeneratedRegex]` members of a `partial` class, named like `REG_FORMAT()`. Don't add reflection (`Activator`, `Type.GetType`, `GetMethod`…). The only sanctioned use is the ViewModel→View lookup in `ControlExtensions.CreateFromViewModels`, which works because `YAGT` is a `TrimmerRootAssembly`.
 - **Compiled bindings** are on by default. Every `.axaml` root and every `DataTemplate` needs an `x:DataType`.
 - **Threading.** Async git calls end with `.ConfigureAwait(false)`. Return to the UI with `Dispatcher.UIThread.Invoke/Post`. The synchronous `ReadToEnd()`/`GetResult()` are only for trivial, instant queries such as reading one config value.
 - **Mutating the repo.** Do it from a Popup's `Sure()` or a `Repository` method that holds `using var lockWatcher = _repo.LockWatcher();` and logs through `_repo.CreateLog("...")` with `.Use(log)`. Pass a `CancellationToken` only to read-only commands.
@@ -102,7 +102,7 @@ Keep one logical change per commit, so fixes can be cherry-picked across forks.
 
 ## Fork policy (upstream compatibility comes first)
 
-- **Keep upstream identity in code.** Leave the `SourceGit` namespace, assembly and product names, data directories, and the `sourcegit.*` per-repo files alone. Renaming them causes endless merge conflicts and breaks users' existing settings. Fork branding belongs in docs only.
+- **Keep fork identity clear.** The displayed app name, assembly, executable, packages, and data directories are `YAGT` (Yet Another Git Tool); Linux executables and package names use `yagt`. Releases and support point to `bawkee/yagt`. Retain SourceGit attribution and its MIT notice. Keep the internal `SourceGit` namespace and `sourcegit.*` repository metadata compatible with upstream to reduce merge conflicts. On first launch, copy existing upstream configuration into YAGT’s separate directory without changing the originals.
 - **Keep the footprint small:**
   - Prefer new files (a new Command/ViewModel/View) over editing large upstream files.
   - When you do edit upstream code, make small, localized insertions.

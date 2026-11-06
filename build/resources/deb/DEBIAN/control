@@ -1,8 +1,8 @@
-Package: sourcegit
+Package: yagt
 Version: 2025.10
 Priority: optional
 Depends: libx11-6, libice6, libsm6, @ICU_DEPS@, xdg-utils
 Architecture: amd64
 Installed-Size: 60440
-Maintainer: longshuang@msn.cn
-Description: Open-source & Free Git GUI Client
+Maintainer: Bojan Sala <38323343+bawkee@users.noreply.github.com>
+Description: Yet Another Git Tool

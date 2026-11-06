@@ -6,6 +6,8 @@ on:
 
 jobs:
   notify-homebrew:
+    # This tap distributes upstream SourceGit, not YAGT.
+    if: github.repository == 'sourcegit-scm/sourcegit'
     runs-on: ubuntu-latest
     steps:
       - name: Notify Homebrew tap

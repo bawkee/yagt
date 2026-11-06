@@ -117,7 +117,7 @@ Context menus usually call `repo.ShowPopup(new ViewModels.X(repo, target))` dire
 
 ## 8. Checklist
 
-- [ ] `dotnet build`, then `dotnet format --verify-no-changes src/SourceGit.csproj`
+- [ ] `dotnet build`, then `dotnet format --verify-no-changes src/YAGT.csproj`
 - [ ] `python skills/ui-theme-and-styles/scripts/check_resources.py`
 - [ ] Test it in the running app with both the Light and Dark themes. Check that the popup keeps focus on the first input, and that Enter and Esc work.
 - [ ] Check that the UI doesn't freeze on a large repo, and that the watcher refreshes the affected panels afterwards.

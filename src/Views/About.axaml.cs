@@ -42,22 +42,17 @@ namespace SourceGit.Views
 
         private void OnVisitReleaseNotes(object _, RoutedEventArgs e)
         {
-            var ver = TxtVersion.Text ?? string.Empty;
-            var endOfTagIdx = ver.IndexOf('-');
-            if (endOfTagIdx > 0)
-                ver = ver.Substring(0, endOfTagIdx);
-
-            Native.OS.OpenBrowser($"https://github.com/sourcegit-scm/sourcegit/releases/tag/{ver}");
-            e.Handled = true;
-        }
-
-        private void OnVisitWebsite(object _, RoutedEventArgs e)
-        {
-            Native.OS.OpenBrowser("https://sourcegit-scm.github.io/");
+            Native.OS.OpenBrowser("https://github.com/bawkee/yagt/releases");
             e.Handled = true;
         }
 
         private void OnVisitSourceCode(object _, RoutedEventArgs e)
+        {
+            Native.OS.OpenBrowser("https://github.com/bawkee/yagt");
+            e.Handled = true;
+        }
+
+        private void OnVisitUpstream(object _, RoutedEventArgs e)
         {
             Native.OS.OpenBrowser("https://github.com/sourcegit-scm/sourcegit");
             e.Handled = true;

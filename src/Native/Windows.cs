@@ -68,10 +68,12 @@ namespace SourceGit.Native
             {
                 var appDataDir = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "SourceGit");
+                    "YAGT");
 
-                if (!Directory.Exists(appDataDir))
-                    Directory.CreateDirectory(appDataDir);
+                var upstreamDir = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "SourceGit");
+                ConfigurationMigration.ImportIfNeeded(upstreamDir, appDataDir);
 
                 dirs.ConfigDir = appDataDir;
                 dirs.CacheDir = appDataDir;

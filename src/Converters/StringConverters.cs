@@ -98,7 +98,7 @@ namespace SourceGit.Converters
             public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
             {
                 if (values is not { Count: 2 })
-                    return "SourceGit";
+                    return App.Text("App.Name");
 
                 var page = values[0] as string;
                 var workspace = values[1] as string;
@@ -107,7 +107,7 @@ namespace SourceGit.Converters
                 if (string.IsNullOrEmpty(workspace))
                     workspace = "Unnamed";
 
-                return $"{page} - {workspace}";
+                return $"{page} - {workspace} - {App.Text("App.Name")}";
             }
 
             public IList<object> ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

@@ -41,7 +41,7 @@ Where things live and how data flows at runtime. Paths are relative to `src/`. P
 - `--rebase-todo-editor` and `--rebase-message-editor`: git's interactive rebase editors.
 - `--core-editor`: git's `core.editor`.
 - `--history <file>` and `--blame <file>`: standalone viewers.
-- `SOURCEGIT_LAUNCH_AS_ASKPASS`: SSH/HTTPS password prompt.
+- `YAGT_LAUNCH_AS_ASKPASS`: SSH/HTTPS password prompt.
 
 Otherwise it starts the normal `Launcher` window. Single-instance hand-off goes through `Models/IpcChannel.cs`. Keep these modes working when you touch `App` or `Commands/Command.cs` (`CreateGitStartInfo`).
 
@@ -77,4 +77,4 @@ Otherwise it starts the normal `Launcher` window. Single-instance hand-off goes 
 | Team-shared issue-tracker rules | `<repo>/.issuetracker` (git-config format, committed by users) | `Models.IssueTracker` |
 | Crash logs, avatars cache | `<CacheDir>/crashes`, `<CacheDir>/avatars` | — |
 
-All of these go through `JsonCodeGen` or git config. Never rename these files; existing users depend on them.
+All of these go through `JsonCodeGen` or git config. YAGT imports upstream configuration on first launch; repository metadata retains its upstream filenames for compatibility.

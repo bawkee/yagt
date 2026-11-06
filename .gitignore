@@ -30,18 +30,22 @@ package.json
 package-lock.json
 
 
-# Flatpak
-!build/resources/flatpak
-
-build/resources/
-build/SourceGit/
-build/SourceGit.app/
+# Generated package contents
+build/resources/deb/opt/
+build/resources/deb/usr/
+build/resources/rpm/BUILD/
+build/resources/rpm/BUILDROOT/
+build/resources/rpm/RPMS/
+build/resources/rpm/SOURCES/
+build/resources/rpm/SRPMS/
+build/YAGT/
+build/YAGT.app/
 build/*.zip
 build/*.tar.gz
 build/*.deb
 build/*.rpm
 build/*.AppImage
-SourceGit.app/
+YAGT.app/
 build.command
 src/Properties/launchSettings.json
 *.lscache

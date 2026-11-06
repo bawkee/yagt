@@ -58,34 +58,15 @@ namespace SourceGit.Native
             }
 
             // XDG Base Directory Specification: https://specifications.freedesktop.org/basedir/latest/
-            dirs.ConfigDir = GetXdgDirectory("XDG_CONFIG_HOME", Path.Combine(home, ".config"), "SourceGit");
-            dirs.CacheDir = GetXdgDirectory("XDG_CACHE_HOME", Path.Combine(home, ".cache"), "SourceGit");
+            dirs.ConfigDir = GetXdgDirectory("XDG_CONFIG_HOME", Path.Combine(home, ".config"), "YAGT");
+            dirs.CacheDir = GetXdgDirectory("XDG_CACHE_HOME", Path.Combine(home, ".cache"), "YAGT");
 
-            // If the app basic dirs already exist, we can skip the migration step
-            if (Directory.Exists(dirs.ConfigDir) && Directory.Exists(dirs.CacheDir))
-                return dirs;
+            var upstreamDir = GetXdgDirectory("XDG_CONFIG_HOME", Path.Combine(home, ".config"), "SourceGit");
+            if (!Directory.Exists(upstreamDir))
+                upstreamDir = Path.Combine(home, ".sourcegit");
 
-            // Create the config and cache directories if they don't exist
-            if (!Directory.Exists(dirs.ConfigDir))
-                Directory.CreateDirectory(dirs.ConfigDir);
-            if (!Directory.Exists(dirs.CacheDir))
-                Directory.CreateDirectory(dirs.CacheDir);
-
-            // Migrate legacy data dir: ~/.sourcegit to XDG standard directories
-            var legacyDir = Path.Combine(home, ".sourcegit");
-            if (Directory.Exists(legacyDir))
-            {
-                try
-                {
-                    File.Copy(Path.Combine(legacyDir, "preference.json"), Path.Combine(dirs.ConfigDir, "preference.json"), true);
-                    Directory.Move(Path.Combine(legacyDir, "avatars"), Path.Combine(dirs.CacheDir, "avatars"));
-                    Directory.Delete(legacyDir, true);
-                }
-                catch
-                {
-                    // Ignore any errors during migration
-                }
-            }
+            ConfigurationMigration.ImportIfNeeded(upstreamDir, dirs.ConfigDir);
+            Directory.CreateDirectory(dirs.CacheDir);
 
             return dirs;
         }

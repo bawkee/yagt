@@ -2,7 +2,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:s="using:SourceGit"
              x:Class="SourceGit.App"
-             Name="SourceGit"
+             x:DataType="s:App"
+             Name="YAGT"
              RequestedThemeVariant="Dark">
   <Application.Resources>
     <ResourceDictionary>

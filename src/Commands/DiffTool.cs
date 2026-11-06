@@ -31,7 +31,7 @@ namespace SourceGit.Commands
             else
             {
                 var cmd = $"{tool.Exec.Quoted()} {tool.Cmd}";
-                Args = $"-c difftool.sourcegit.cmd={cmd.Quoted()} difftool --tool=sourcegit --no-prompt {_option}";
+                Args = $"-c difftool.yagt.cmd={cmd.Quoted()} difftool --tool=yagt --no-prompt {_option}";
             }
 
             try

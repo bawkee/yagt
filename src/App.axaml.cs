@@ -63,8 +63,8 @@ namespace SourceGit
             builder.ConfigureFonts(manager =>
             {
                 var monospace = new EmbeddedFontCollection(
-                    new Uri("fonts:SourceGit", UriKind.Absolute),
-                    new Uri("avares://SourceGit/Resources/Fonts", UriKind.Absolute));
+                    new Uri("fonts:YAGT", UriKind.Absolute),
+                    new Uri("avares://YAGT/Resources/Fonts", UriKind.Absolute));
                 manager.AddFontCollection(monospace);
             });
 
@@ -191,7 +191,7 @@ namespace SourceGit
             {
                 if (!string.IsNullOrEmpty(defaultFont))
                 {
-                    monospaceFont = $"fonts:SourceGit#JetBrains Mono NL,{defaultFont}";
+                    monospaceFont = $"fonts:YAGT#JetBrains Mono NL,{defaultFont}";
                     resDic.Add("Fonts.Monospace", FontFamily.Parse(monospaceFont));
                 }
             }
@@ -439,7 +439,7 @@ namespace SourceGit
 
         private bool TryLaunchAsAskpass(IClassicDesktopStyleApplicationLifetime desktop)
         {
-            var launchAsAskpass = Environment.GetEnvironmentVariable("SOURCEGIT_LAUNCH_AS_ASKPASS");
+            var launchAsAskpass = Environment.GetEnvironmentVariable("YAGT_LAUNCH_AS_ASKPASS");
             if (launchAsAskpass is not "TRUE")
                 return false;
 
@@ -547,8 +547,20 @@ namespace SourceGit
                     // Fetch latest release information.
                     using var client = new HttpClient();
                     client.Timeout = TimeSpan.FromSeconds(5);
+                    client.DefaultRequestHeaders.UserAgent.ParseAdd("YAGT");
+                    client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
 
-                    var data = await client.GetStringAsync("https://sourcegit-scm.github.io/data/version.json");
+                    using var response = await client.GetAsync("https://api.github.com/repos/bawkee/yagt/releases/latest").ConfigureAwait(false);
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        // A fork may not have published its first release yet.
+                        if (manually)
+                            ShowSelfUpdateResult(new Models.AlreadyUpToDate());
+                        return;
+                    }
+
+                    response.EnsureSuccessStatusCode();
+                    var data = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                     var ver = JsonSerializer.Deserialize(data, JsonCodeGen.Default.Version);
                     if (ver == null)
                         return;
@@ -565,7 +577,7 @@ namespace SourceGit
                         if (!ver.IsNewVersion || ver.TagName == ViewModels.Preferences.Instance.IgnoreUpdateTag)
                             return;
 
-                        _launcher.NewVersion = ver;
+                        Dispatcher.UIThread.Post(() => _launcher.NewVersion = ver);
                     }
                 }
                 catch (Exception e)

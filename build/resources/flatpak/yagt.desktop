@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=YAGT
+Comment=Yet Another Git Tool
+Exec=yagt
+Icon=io.github.bawkee.yagt
+Terminal=false
+Type=Application
+Categories=Development
+MimeType=inode/directory;

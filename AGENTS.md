@@ -100,6 +100,12 @@ Use upstream's format: `<prefix>: <short lowercase imperative summary>`, optiona
 
 Keep one logical change per commit, so fixes can be cherry-picked across forks.
 
+- Review the staged diff and recent commit history before writing the message. Describe the actual change and follow the established style.
+- Keep the subject concise, imperative, and without a trailing period.
+- A subject alone is sufficient for minor, self-explanatory changes, such as a typo fix or tiny cleanup.
+- For anything else, include a subject, a blank line, and a body describing **what changed and why**. Explain relevant behavior changes and design decisions; use bullets when several related changes need describing. Judge scope by the impact of the change, not just the number of changed lines.
+- Include relevant validation and material limitations in the body when useful, following the existing `Validation:` convention. Report only checks actually performed.
+
 ## Fork policy (upstream compatibility comes first)
 
 - **Keep fork identity clear.** The displayed app name, assembly, executable, packages, and data directories are `YAGT` (Yet Another Git Tool); Linux executables and package names use `yagt`. Releases and support point to `bawkee/yagt`. Retain SourceGit attribution and its MIT notice. Keep the internal `SourceGit` namespace and `sourcegit.*` repository metadata compatible with upstream to reduce merge conflicts. On first launch, copy existing upstream configuration into YAGT’s separate directory without changing the originals.

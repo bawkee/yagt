@@ -576,7 +576,6 @@
 
             <!-- Commit Search Panel -->
             <v:CommitSearchView Grid.Column="0"
-                                Margin="6,0,4,0"
                                 DataContext="{Binding Histories.SearchCommitContext, Mode=OneWay}"
                                 IsVisible="{Binding #ThisControl.IsCommitSearchPanelVisible, Mode=OneWay}"/>
 

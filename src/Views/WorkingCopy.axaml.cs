@@ -18,6 +18,12 @@ namespace SourceGit.Views
             InitializeComponent();
         }
 
+        public void FocusSearchBox()
+        {
+            LocalChangesSearchBox.Focus(NavigationMethod.Directional);
+            LocalChangesSearchBox.SelectAll();
+        }
+
         private void OnMainLayoutSizeChanged(object sender, SizeChangedEventArgs e)
         {
             if (sender is not Grid grid)
@@ -139,7 +145,7 @@ namespace SourceGit.Views
             }
             else if (e.Key is Key.F && e.KeyModifiers == cmdKey)
             {
-                LocalChangesSearchBox.Focus();
+                FocusSearchBox();
                 e.Handled = true;
             }
         }
@@ -195,7 +201,7 @@ namespace SourceGit.Views
             }
             else if (e.Key is Key.F && e.KeyModifiers == cmdKey)
             {
-                LocalChangesSearchBox.Focus();
+                FocusSearchBox();
                 e.Handled = true;
             }
         }

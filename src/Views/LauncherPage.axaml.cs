@@ -1,3 +1,5 @@
+using System;
+
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -11,6 +13,34 @@ namespace SourceGit.Views
         public LauncherPage()
         {
             InitializeComponent();
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+
+            if (e.Handled || e.Key != Key.F ||
+                e.KeyModifiers != (OperatingSystem.IsMacOS() ? KeyModifiers.Meta : KeyModifiers.Control) ||
+                e.Source is TextBox ||
+                DataContext is not ViewModels.LauncherPage { Popup: null, Data: ViewModels.Repository repo } ||
+                this.FindAncestorOfType<Launcher>()?.DataContext is not ViewModels.Launcher { CommandPalette: null })
+                return;
+
+            if (repo.IsDashboardVisible)
+            {
+                repo.Histories.IsSearchingCommits = true;
+                this.FindDescendantOfType<CommitSearchView>()?.FocusSearchBox();
+            }
+            else if (repo.IsWorkingCopyVisible)
+            {
+                this.FindDescendantOfType<WorkingCopy>()?.FocusSearchBox();
+            }
+            else if (repo.IsStashesVisible)
+            {
+                this.FindDescendantOfType<StashesPage>()?.FocusSearchBox();
+            }
+
+            e.Handled = true;
         }
 
         private async void OnPopupSureByHotKey(object sender, RoutedEventArgs e)

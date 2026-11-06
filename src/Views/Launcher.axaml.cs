@@ -271,8 +271,8 @@ namespace SourceGit.Views
                             vm.CommandPalette = new ViewModels.RepositoryCommandPalette(repo);
                             e.Handled = true;
                             return;
-                        case Key.F when e.KeyModifiers.HasFlag(KeyModifiers.Shift):
-                            repo.Histories.IsSearchingCommits = !repo.Histories.IsSearchingCommits;
+                        case Key.F when e.KeyModifiers.HasFlag(KeyModifiers.Shift) && vm.ActivePage.Popup == null:
+                            repo.Histories.IsSearchingCommits = !repo.IsDashboardVisible || !repo.Histories.IsSearchingCommits;
                             e.Handled = true;
                             return;
                         case Key.B when e.KeyModifiers.HasFlag(KeyModifiers.Shift):

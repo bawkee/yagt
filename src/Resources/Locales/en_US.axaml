@@ -564,6 +564,7 @@
   <x:String x:Key="Text.Hotkeys.Repo.CommitWithAutoStage" xml:space="preserve">Stage all changes and commit</x:String>
   <x:String x:Key="Text.Hotkeys.Repo.CreateBranch" xml:space="preserve">Create new branch</x:String>
   <x:String x:Key="Text.Hotkeys.Repo.Fetch" xml:space="preserve">Fetch, starts directly</x:String>
+  <x:String x:Key="Text.Hotkeys.Repo.Find" xml:space="preserve">Search focused panel or commit history</x:String>
   <x:String x:Key="Text.Hotkeys.Repo.GoToChild" xml:space="preserve">Goto child of selected commit</x:String>
   <x:String x:Key="Text.Hotkeys.Repo.GoToParent" xml:space="preserve">Goto parent of selected commit</x:String>
   <x:String x:Key="Text.Hotkeys.Repo.OpenCommandPalette" xml:space="preserve">Open command palette</x:String>
@@ -859,6 +860,7 @@
   <x:String x:Key="Text.Repository.Search.BySHA" xml:space="preserve">SHA</x:String>
   <x:String x:Key="Text.Repository.Search.InCurrentBranch" xml:space="preserve">Current Branch</x:String>
   <x:String x:Key="Text.Repository.Search.Method" xml:space="preserve">SEARCH BY</x:String>
+  <x:String x:Key="Text.Repository.Search.NoResults" xml:space="preserve">No commits found</x:String>
   <x:String x:Key="Text.Repository.Search.ToolTip" xml:space="preserve">Search Commits</x:String>
   <x:String x:Key="Text.Repository.ShowDecoratedCommitsOnly" xml:space="preserve">Decorated commits only</x:String>
   <x:String x:Key="Text.Repository.ShowFirstParentOnly" xml:space="preserve">First-parent only</x:String>

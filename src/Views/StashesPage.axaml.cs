@@ -15,6 +15,12 @@ namespace SourceGit.Views
             InitializeComponent();
         }
 
+        public void FocusSearchBox()
+        {
+            StashesSearchBox.Focus(NavigationMethod.Directional);
+            StashesSearchBox.SelectAll();
+        }
+
         private void OnMainLayoutSizeChanged(object sender, SizeChangedEventArgs e)
         {
             if (sender is not Grid grid)

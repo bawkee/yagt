@@ -18,7 +18,7 @@
                FontWeight="Bold"/>
 
     <!-- Search Input Box -->
-    <Grid Grid.Row="1" Height="26">
+    <Grid Grid.Row="1" Height="26" Margin="6,0,4,0">
       <TextBox x:Name="TxtSearchCommitsBox"
                Height="24"
                BorderThickness="1"
@@ -26,8 +26,7 @@
                Background="{DynamicResource Brush.Contents}"
                CornerRadius="12"
                Text="{Binding Filter, Mode=TwoWay}"
-               VerticalContentAlignment="Center"
-               KeyDown="OnSearchBoxKeyDown">
+               VerticalContentAlignment="Center">
         <TextBox.InnerLeftContent>
           <Path Width="14" Height="14"
                 Margin="6,0,0,0"
@@ -131,7 +130,7 @@
     </Grid>
 
     <!-- Search Setting -->
-    <Grid Grid.Row="2" Margin="4,4,4,4" RowDefinitions="26,Auto" ColumnDefinitions="Auto,*">
+    <Grid Grid.Row="2" Margin="10,4,8,10" RowDefinitions="26,Auto" ColumnDefinitions="Auto,*">
       <TextBlock Grid.Row="0" Grid.Column="0"
                  Classes="group_header_label"
                  Text="{DynamicResource Text.Repository.Search.Method}"
@@ -163,15 +162,16 @@
 
     <!-- Search Results -->
     <ListBox Grid.Row="3"
-             Margin="0,6"
-             Padding="4"
+             x:Name="SearchResultsBox"
+             Focusable="True"
+             Padding="0"
              ItemsSource="{Binding Results}"
              SelectionMode="Single"
              SelectedItem="{Binding Selected, Mode=TwoWay}"
-             BorderThickness="1"
-             BorderBrush="{DynamicResource Brush.Border2}"
+             BorderThickness="0,1,0,0"
+             BorderBrush="{DynamicResource Brush.Border0}"
              Background="{DynamicResource Brush.Contents}"
-             CornerRadius="4"
+             CornerRadius="0"
              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
              ScrollViewer.VerticalScrollBarVisibility="Auto"
              Grid.IsSharedSizeScope="True">
@@ -180,7 +180,7 @@
           <Setter Property="Margin" Value="0"/>
           <Setter Property="Padding" Value="0"/>
           <Setter Property="Height" Value="28"/>
-          <Setter Property="CornerRadius" Value="4"/>
+          <Setter Property="CornerRadius" Value="0"/>
         </Style>
       </ListBox.Styles>
 
@@ -215,18 +215,25 @@
       </ListBox.ItemTemplate>
     </ListBox>
 
-    <Path Grid.Row="3"
-          HorizontalAlignment="Center" VerticalAlignment="Center"
-          Width="48" Height="48"
-          Data="{StaticResource Icons.Empty}"
-          Fill="{DynamicResource Brush.FG2}">
-      <Path.IsVisible>
+    <StackPanel Grid.Row="3"
+                Margin="8"
+                Spacing="8"
+                HorizontalAlignment="Center" VerticalAlignment="Center">
+      <StackPanel.IsVisible>
         <MultiBinding Converter="{x:Static BoolConverters.And}">
           <Binding Path="Results" Converter="{x:Static c:ListConverters.IsNullOrEmpty}"/>
           <Binding Path="IsQuerying" Converter="{x:Static BoolConverters.Not}"/>
         </MultiBinding>
-      </Path.IsVisible>
-    </Path>
+      </StackPanel.IsVisible>
+      <Path Width="48" Height="48"
+            Data="{StaticResource Icons.Empty}"
+            Fill="{DynamicResource Brush.FG2}"/>
+      <TextBlock Text="{DynamicResource Text.Repository.Search.NoResults}"
+                 Foreground="{DynamicResource Brush.FG2}"
+                 TextAlignment="Center"
+                 TextWrapping="Wrap"
+                 IsVisible="{Binding HasNoResults}"/>
+    </StackPanel>
 
     <v:LoadingIcon Grid.Row="3"
                    Width="48" Height="48"

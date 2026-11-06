@@ -39,6 +39,28 @@ namespace SourceGit.Views
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
+            if (DataContext is ViewModels.ChangeCollectionAsTree &&
+                e.KeyModifiers == KeyModifiers.None &&
+                e.Key is Key.Up or Key.Down)
+            {
+                var step = e.Key == Key.Down ? 1 : -1;
+                var index = e.Source is ListBoxItem item ? IndexFromContainer(item) : SelectedIndex;
+                if (index < 0)
+                    index = step > 0 ? -1 : Items.Count;
+
+                for (var i = index + step; i >= 0 && i < Items.Count; i += step)
+                {
+                    if (Items[i] is ViewModels.ChangeTreeNode { IsFolder: false } file)
+                    {
+                        Select(file);
+                        break;
+                    }
+                }
+
+                e.Handled = true;
+                return;
+            }
+
             if (SelectedItems is [ViewModels.ChangeTreeNode node] && e.KeyModifiers == KeyModifiers.None)
             {
                 if (e.Key == Key.Left)

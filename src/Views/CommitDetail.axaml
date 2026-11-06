@@ -10,6 +10,19 @@
              x:Class="SourceGit.Views.CommitDetail"
              x:DataType="vm:CommitDetail"
              x:Name="ThisControl">
+  <UserControl.DataTemplates>
+    <DataTemplate DataType="vm:CommitSubjectMatch" x:DataType="vm:CommitSubjectMatch">
+      <StackPanel Spacing="4">
+        <TextBlock Text="{Binding BranchNames}" TextWrapping="Wrap"/>
+        <Button Classes="icon_button" Padding="0" HorizontalAlignment="Left" Cursor="Hand"
+                IsVisible="{Binding HasMoreBranches}" Click="OnShowAllSubjectMatchBranchesClicked">
+          <TextBlock Text="{Binding RemainingBranchCount, Converter={x:Static c:StringConverters.FormatByResourceKey}, ConverterParameter=CommitDetail.Info.SubjectMatches.ShowMoreBranches}"
+                     Foreground="{DynamicResource Brush.Link}" TextDecorations="Underline" TextWrapping="Wrap"/>
+        </Button>
+      </StackPanel>
+    </DataTemplate>
+  </UserControl.DataTemplates>
+
   <TabControl SelectedIndex="{Binding ActiveTabIndex, Mode=TwoWay}" Padding="0,4">
     <!-- Information Page -->
     <TabItem>
@@ -41,21 +54,21 @@
                        Foreground="{DynamicResource Brush.FG2}" TextWrapping="Wrap" IsVisible="{Binding SubjectMatches.IsEmpty}"/>
             <TextBlock Text="{DynamicResource Text.CommitDetail.Info.SubjectMatches.Failed}"
                        Foreground="{DynamicResource Brush.FG2}" IsVisible="{Binding SubjectMatches.HasFailed}"/>
-            <Grid ColumnDefinitions="Auto,*" IsVisible="{Binding SubjectMatches.SelectedCommit.Branches, Converter={x:Static c:ListConverters.IsNotNullOrEmpty}}">
-              <TextBlock Grid.Column="0" Margin="0,0,12,0" Foreground="{DynamicResource Brush.FG2}"
+            <Grid ColumnDefinitions="Auto,*" IsVisible="{Binding SubjectMatches.SelectedCommit.HasBranches}">
+              <TextBlock Grid.Column="0" Margin="0,0,12,0" VerticalAlignment="Top" Foreground="{DynamicResource Brush.FG2}"
                          Text="{DynamicResource Text.CommitDetail.Info.SubjectMatches.SelectedCommit}"/>
-              <TextBlock Grid.Column="1" Text="{Binding SubjectMatches.SelectedCommit.BranchNames}" TextWrapping="Wrap"/>
+              <ContentControl Grid.Column="1" Content="{Binding SubjectMatches.SelectedCommit}"/>
             </Grid>
             <ItemsControl ItemsSource="{Binding SubjectMatches.Matches}">
               <ItemsControl.ItemTemplate>
-                <DataTemplate DataType="m:CommitSubjectMatch" x:DataType="m:CommitSubjectMatch">
+                <DataTemplate DataType="vm:CommitSubjectMatch" x:DataType="vm:CommitSubjectMatch">
                   <Grid ColumnDefinitions="Auto,*" Margin="0,2">
                     <Button Grid.Column="0" Classes="icon_button" Padding="0" Margin="0,0,12,0"
                             Click="OnSubjectMatchClicked" ToolTip.Tip="{Binding SHA}" VerticalAlignment="Top">
                       <TextBlock Text="{Binding SHA, Converter={x:Static c:StringConverters.ToShortSHA}}"
                                  FontFamily="{DynamicResource Fonts.Monospace}" Foreground="DarkOrange" TextDecorations="Underline"/>
                     </Button>
-                    <TextBlock Grid.Column="1" Text="{Binding BranchNames}" TextWrapping="Wrap"/>
+                    <ContentControl Grid.Column="1" Content="{Binding}"/>
                   </Grid>
                 </DataTemplate>
               </ItemsControl.ItemTemplate>

@@ -44,13 +44,13 @@ namespace SourceGit.ViewModels
             private set => SetProperty(ref _isTruncated, value);
         }
 
-        public List<Models.CommitSubjectMatch> Matches
+        public List<CommitSubjectMatch> Matches
         {
             get => _matches;
             private set => SetProperty(ref _matches, value);
         }
 
-        public Models.CommitSubjectMatch SelectedCommit
+        public CommitSubjectMatch SelectedCommit
         {
             get => _selectedCommit;
             private set => SetProperty(ref _selectedCommit, value);
@@ -106,8 +106,8 @@ namespace SourceGit.ViewModels
                         if (token.IsCancellationRequested)
                             return;
 
-                        Matches = matches ?? [];
-                        SelectedCommit = matches != null ? query.SelectedCommit : null;
+                        Matches = matches?.ConvertAll(match => new CommitSubjectMatch(match)) ?? [];
+                        SelectedCommit = matches != null ? new CommitSubjectMatch(query.SelectedCommit) : null;
                         HasFailed = matches == null;
                         IsEmpty = matches is { Count: 0 };
                         IsTruncated = matches != null && query.IsTruncated;
@@ -140,7 +140,7 @@ namespace SourceGit.ViewModels
         private bool _hasFailed;
         private bool _isEmpty;
         private bool _isTruncated;
-        private List<Models.CommitSubjectMatch> _matches = [];
-        private Models.CommitSubjectMatch _selectedCommit;
+        private List<CommitSubjectMatch> _matches = [];
+        private CommitSubjectMatch _selectedCommit;
     }
 }

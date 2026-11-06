@@ -211,6 +211,7 @@
   <x:String x:Key="Text.CommitDetail.Info.SubjectMatches.Failed" xml:space="preserve">Could not look up matching subjects.</x:String>
   <x:String x:Key="Text.CommitDetail.Info.SubjectMatches.Loading" xml:space="preserve">Finding matching subjects and containing branches...</x:String>
   <x:String x:Key="Text.CommitDetail.Info.SubjectMatches.SelectedCommit" xml:space="preserve">Selected commit:</x:String>
+  <x:String x:Key="Text.CommitDetail.Info.SubjectMatches.ShowMoreBranches" xml:space="preserve">Show {0} more</x:String>
   <x:String x:Key="Text.CommitDetail.Info.SubjectMatches.Tip" xml:space="preserve">Local or remote-tracking branches containing this commit or other commits with the same subject (case-sensitive). Bodies and patches are not compared.</x:String>
   <x:String x:Key="Text.CommitDetail.Info.SubjectMatches.Truncated" xml:space="preserve">Showing the first 100 matching commits.</x:String>
   <x:String x:Key="Text.CommitDetail.Info.WebLinks" xml:space="preserve">Open in Browser</x:String>

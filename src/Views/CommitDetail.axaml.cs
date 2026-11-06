@@ -314,8 +314,16 @@ namespace SourceGit.Views
 
         private void OnSubjectMatchClicked(object sender, RoutedEventArgs e)
         {
-            if (DataContext is ViewModels.CommitDetail detail && sender is Button { DataContext: Models.CommitSubjectMatch match })
+            if (DataContext is ViewModels.CommitDetail detail && sender is Button { DataContext: ViewModels.CommitSubjectMatch match })
                 detail.NavigateTo(match.SHA);
+
+            e.Handled = true;
+        }
+
+        private void OnShowAllSubjectMatchBranchesClicked(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button { DataContext: ViewModels.CommitSubjectMatch match })
+                match.ShowAllBranches();
 
             e.Handled = true;
         }

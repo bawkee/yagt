@@ -34,6 +34,12 @@ namespace SourceGit.Models
             set => SetProperty(ref _isHighlightedInGraph, value);
         }
 
+        public bool IsSameSubjectMatch
+        {
+            get => _isSameSubjectMatch;
+            set => SetProperty(ref _isSameSubjectMatch, value);
+        }
+
         public bool IsCommitterVisible => !Author.Equals(Committer) || AuthorTime != CommitterTime;
         public bool IsCurrentHead => Decorators.Find(x => x.Type is DecoratorType.CurrentBranchHead or DecoratorType.CurrentCommitHead) != null;
         public bool HasDecorators => Decorators.Count > 0;
@@ -126,6 +132,7 @@ namespace SourceGit.Models
         }
 
         private bool _isHighlightedInGraph = false;
+        private bool _isSameSubjectMatch = false;
     }
 
     public class CommitFullMessage

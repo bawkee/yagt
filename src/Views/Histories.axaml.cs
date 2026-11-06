@@ -675,6 +675,16 @@ namespace SourceGit.Views
                 ev.Handled = true;
             };
 
+            var matchingSubjects = new MenuItem();
+            matchingSubjects.Header = App.Text("Histories.HighlightMatchingSubjects");
+            if (histories.HighlightMatchingCommitSubjects)
+                matchingSubjects.Icon = this.CreateMenuIcon("Icons.Check");
+            matchingSubjects.Click += (_, ev) =>
+            {
+                histories.HighlightMatchingCommitSubjects = !histories.HighlightMatchingCommitSubjects;
+                ev.Handled = true;
+            };
+
             var columnsHeader = new MenuItem();
             columnsHeader.Header = new TextBlock() { Text = App.Text("Histories.ShowColumns"), FontWeight = FontWeight.Bold };
             columnsHeader.IsEnabled = false;
@@ -740,6 +750,8 @@ namespace SourceGit.Views
             menu.Items.Add(selectedCommitsOnly);
             menu.Items.Add(selectedCommitsOnlyFirstParent);
             menu.Items.Add(currentBranchAndSelectedCommits);
+            menu.Items.Add(new MenuItem() { Header = "-" });
+            menu.Items.Add(matchingSubjects);
             menu.Items.Add(new MenuItem() { Header = "-" });
             menu.Items.Add(columnsHeader);
             menu.Items.Add(authorColumn);

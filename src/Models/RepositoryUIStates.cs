@@ -57,6 +57,12 @@ namespace SourceGit.Models
             set;
         } = CommitGraphHighlighting.All;
 
+        public bool HighlightMatchingCommitSubjects
+        {
+            get;
+            set;
+        } = false;
+
         public BranchSortMode LocalBranchSortMode
         {
             get;

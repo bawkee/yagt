@@ -5,6 +5,7 @@ using System.IO;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.VisualTree;
 
@@ -295,6 +296,28 @@ namespace SourceGit.Views
             menu.Items.Add(copyPath);
             menu.Items.Add(copyFullPath);
             return menu;
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            if (DataContext is ViewModels.CommitDetail detail)
+                detail.SubjectMatches.Refresh();
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            if (DataContext is ViewModels.CommitDetail detail)
+                detail.SubjectMatches.Cancel();
+            base.OnDetachedFromVisualTree(e);
+        }
+
+        private void OnSubjectMatchClicked(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.CommitDetail detail && sender is Button { DataContext: Models.CommitSubjectMatch match })
+                detail.NavigateTo(match.SHA);
+
+            e.Handled = true;
         }
 
         private void OnTabHeaderPointerPressed(object sender, PointerPressedEventArgs e)

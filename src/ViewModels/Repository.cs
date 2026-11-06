@@ -480,6 +480,8 @@ namespace SourceGit.ViewModels
                 _cancellationRefreshStashes.Cancel();
 
             _watcher?.Dispose();
+            if (_histories?.DetailContext is CommitDetail detail)
+                detail.SubjectMatches.Cancel();
             _autoFetchTimer.Dispose();
         }
 

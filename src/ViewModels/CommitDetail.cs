@@ -67,6 +67,8 @@ namespace SourceGit.ViewModels
             private set => SetProperty(ref _fullMessage, value);
         }
 
+        public CommitSubjectMatches SubjectMatches { get; }
+
         public Models.CommitSignInfo SignInfo
         {
             get => _signInfo;
@@ -161,6 +163,7 @@ namespace SourceGit.ViewModels
         {
             _repo = repo;
             _sharedData = sharedData ?? new CommitDetailSharedData();
+            SubjectMatches = new CommitSubjectMatches(repo.FullPath, repo.UIStates.HighlightMatchingCommitSubjects);
             WebLinks = Models.CommitLink.Get(repo.Remotes);
         }
 
@@ -453,6 +456,7 @@ namespace SourceGit.ViewModels
 
         private void Refresh()
         {
+            SubjectMatches.SetCommit(_commit);
             _requestingRevisionFiles = false;
             _revisionFiles = null;
 

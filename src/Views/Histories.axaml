@@ -112,7 +112,19 @@
 
             <DataGridTemplateColumn.CellTemplate>
               <DataTemplate DataType="m:Commit">
-                <Border Padding="{Binding LeftMargin, Converter={x:Static c:DoubleConverters.ToLeftMargin}}" ClipToBounds="True" Background="Transparent">
+                <Border Padding="{Binding LeftMargin, Converter={x:Static c:DoubleConverters.ToLeftMargin}}"
+                        ClipToBounds="True"
+                        Classes.same_subject="{Binding IsSameSubjectMatch}">
+                  <Border.Styles>
+                    <Style Selector="Border:not(.same_subject)">
+                      <Setter Property="Background" Value="Transparent"/>
+                    </Style>
+                    <Style Selector="Border.same_subject">
+                      <Setter Property="Background" Value="{DynamicResource Brush.CommitSubjectMatch}"/>
+                      <Setter Property="BorderBrush" Value="{DynamicResource Brush.Accent}"/>
+                      <Setter Property="BorderThickness" Value="3,0,0,0"/>
+                    </Style>
+                  </Border.Styles>
                   <Grid ColumnDefinitions="Auto,Auto,Auto,*" Margin="2,0,4,0" ClipToBounds="True">
                     <v:CommitStatusIndicator Grid.Column="0"
                                              CurrentBranch="{Binding $parent[v:Histories].CurrentBranch}"

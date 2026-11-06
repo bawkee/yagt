@@ -31,6 +31,39 @@
                             WebLinks="{Binding WebLinks}"
                             Margin="0,0,12,0"/>
 
+          <StackPanel Margin="12,12,12,4" Spacing="8" IsVisible="{Binding SubjectMatches.IsEnabled}">
+            <TextBlock Classes="group_header_label" Text="{DynamicResource Text.CommitDetail.Info.SubjectMatches}"/>
+            <TextBlock Text="{DynamicResource Text.CommitDetail.Info.SubjectMatches.Tip}"
+                       Foreground="{DynamicResource Brush.FG2}" TextWrapping="Wrap"/>
+            <TextBlock Text="{DynamicResource Text.CommitDetail.Info.SubjectMatches.Loading}"
+                       Foreground="{DynamicResource Brush.FG2}" IsVisible="{Binding SubjectMatches.IsLoading}"/>
+            <TextBlock Text="{DynamicResource Text.CommitDetail.Info.SubjectMatches.Empty}"
+                       Foreground="{DynamicResource Brush.FG2}" TextWrapping="Wrap" IsVisible="{Binding SubjectMatches.IsEmpty}"/>
+            <TextBlock Text="{DynamicResource Text.CommitDetail.Info.SubjectMatches.Failed}"
+                       Foreground="{DynamicResource Brush.FG2}" IsVisible="{Binding SubjectMatches.HasFailed}"/>
+            <Grid ColumnDefinitions="Auto,*" IsVisible="{Binding SubjectMatches.SelectedCommit.Branches, Converter={x:Static c:ListConverters.IsNotNullOrEmpty}}">
+              <TextBlock Grid.Column="0" Margin="0,0,12,0" Foreground="{DynamicResource Brush.FG2}"
+                         Text="{DynamicResource Text.CommitDetail.Info.SubjectMatches.SelectedCommit}"/>
+              <TextBlock Grid.Column="1" Text="{Binding SubjectMatches.SelectedCommit.BranchNames}" TextWrapping="Wrap"/>
+            </Grid>
+            <ItemsControl ItemsSource="{Binding SubjectMatches.Matches}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="m:CommitSubjectMatch" x:DataType="m:CommitSubjectMatch">
+                  <Grid ColumnDefinitions="Auto,*" Margin="0,2">
+                    <Button Grid.Column="0" Classes="icon_button" Padding="0" Margin="0,0,12,0"
+                            Click="OnSubjectMatchClicked" ToolTip.Tip="{Binding SHA}" VerticalAlignment="Top">
+                      <TextBlock Text="{Binding SHA, Converter={x:Static c:StringConverters.ToShortSHA}}"
+                                 FontFamily="{DynamicResource Fonts.Monospace}" Foreground="DarkOrange" TextDecorations="Underline"/>
+                    </Button>
+                    <TextBlock Grid.Column="1" Text="{Binding BranchNames}" TextWrapping="Wrap"/>
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock Text="{DynamicResource Text.CommitDetail.Info.SubjectMatches.Truncated}"
+                       Foreground="{DynamicResource Brush.FG2}" IsVisible="{Binding SubjectMatches.IsTruncated}"/>
+          </StackPanel>
+
           <!-- Line -->
           <Rectangle Height=".65" Margin="8,8,12,8" Fill="{DynamicResource Brush.Border2}"/>
 

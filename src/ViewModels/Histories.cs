@@ -109,7 +109,30 @@ namespace SourceGit.ViewModels
             {
                 GenerateGraph(value);
                 if (SetProperty(ref _commits, value))
+                {
+                    RebuildSubjectIndex();
                     PostCommitsChanged();
+                    UpdateSubjectHighlights();
+                    if (_detailContext is CommitDetail detail)
+                        detail.SubjectMatches.Refresh();
+                }
+            }
+        }
+
+        public bool HighlightMatchingCommitSubjects
+        {
+            get => _repo.UIStates.HighlightMatchingCommitSubjects;
+            set
+            {
+                if (value == _repo.UIStates.HighlightMatchingCommitSubjects)
+                    return;
+
+                _repo.UIStates.HighlightMatchingCommitSubjects = value;
+                OnPropertyChanged();
+                RebuildSubjectIndex();
+                UpdateSubjectHighlights();
+                if (_detailContext is CommitDetail detail)
+                    detail.SubjectMatches.IsEnabled = value;
             }
         }
 
@@ -148,6 +171,9 @@ namespace SourceGit.ViewModels
             get => _detailContext;
             set
             {
+                if (_detailContext != value && _detailContext is CommitDetail previous)
+                    previous.SubjectMatches.Cancel();
+
                 if (SetProperty(ref _detailContext, value))
                     OnPropertyChanged(nameof(IsOpenAsStandaloneVisible));
             }
@@ -521,6 +547,7 @@ namespace SourceGit.ViewModels
 
         private void PostSelectedCommitsChanged()
         {
+            UpdateSubjectHighlights();
             if (_ignoreSelectionChange)
                 return;
 
@@ -577,6 +604,50 @@ namespace SourceGit.ViewModels
             Graph = Models.CommitGraph.Generate(commits, firstParentOnly, highlighting, extraHeads);
         }
 
+        private void RebuildSubjectIndex()
+        {
+            _commitsBySubject.Clear();
+            if (!HighlightMatchingCommitSubjects)
+                return;
+
+            foreach (var commit in _commits)
+            {
+                if (commit.Subject == null)
+                    continue;
+
+                if (!_commitsBySubject.TryGetValue(commit.Subject, out var matches))
+                {
+                    matches = [];
+                    _commitsBySubject.Add(commit.Subject, matches);
+                }
+
+                matches.Add(commit);
+            }
+        }
+
+        private void UpdateSubjectHighlights()
+        {
+            foreach (var commit in _subjectHighlights)
+                commit.IsSameSubjectMatch = false;
+            _subjectHighlights.Clear();
+
+            if (!HighlightMatchingCommitSubjects || _selectedCommits.Count != 1)
+                return;
+
+            var selected = _selectedCommits[0];
+            if (selected.Subject == null || !_commitsBySubject.TryGetValue(selected.Subject, out var matches))
+                return;
+
+            foreach (var commit in matches)
+            {
+                if (!commit.SHA.Equals(selected.SHA, StringComparison.Ordinal))
+                {
+                    commit.IsSameSubjectMatch = true;
+                    _subjectHighlights.Add(commit);
+                }
+            }
+        }
+
         private Repository _repo = null;
         private Models.Branch _currentBranch = null;
         private bool _hasSingleRemote = false;
@@ -588,6 +659,8 @@ namespace SourceGit.ViewModels
         private Models.Bisect _bisect = null;
         private object _detailContext = Models.Null.Instance;
         private bool _ignoreSelectionChange = false;
+        private readonly Dictionary<string, List<Models.Commit>> _commitsBySubject = new(StringComparer.Ordinal);
+        private readonly List<Models.Commit> _subjectHighlights = [];
 
         private bool _isSearchingCommits = false;
         private SearchCommitContext _searchCommitContext = null;

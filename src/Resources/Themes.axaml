@@ -77,6 +77,7 @@
   <SolidColorBrush x:Key="Brush.Popup" Color="{DynamicResource Color.Popup}"/>
   <SolidColorBrush x:Key="Brush.PopupBorder" Color="{DynamicResource Color.PopupBorder}"/>
   <SolidColorBrush x:Key="Brush.Contents" Color="{DynamicResource Color.Contents}"/>
+  <SolidColorBrush x:Key="Brush.CommitSubjectMatch" Color="{DynamicResource SystemAccentColor}" Opacity="0.1"/>
   <SolidColorBrush x:Key="Brush.Badge" Color="{DynamicResource Color.Badge}"/>
   <SolidColorBrush x:Key="Brush.BadgeFG" Color="{DynamicResource Color.BadgeFG}"/>
   <SolidColorBrush x:Key="Brush.Conflict" Color="{DynamicResource Color.Conflict}"/>

@@ -40,6 +40,12 @@ namespace SourceGit.Models
             set => SetProperty(ref _isSameSubjectMatch, value);
         }
 
+        public double HistoryOpacity
+        {
+            get => _historyOpacity;
+            set => SetProperty(ref _historyOpacity, value);
+        }
+
         public bool IsCommitterVisible => !Author.Equals(Committer) || AuthorTime != CommitterTime;
         public bool IsCurrentHead => Decorators.Find(x => x.Type is DecoratorType.CurrentBranchHead or DecoratorType.CurrentCommitHead) != null;
         public bool HasDecorators => Decorators.Count > 0;
@@ -131,6 +137,7 @@ namespace SourceGit.Models
             });
         }
 
+        private double _historyOpacity = 1;
         private bool _isHighlightedInGraph = false;
         private bool _isSameSubjectMatch = false;
     }

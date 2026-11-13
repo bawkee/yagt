@@ -59,8 +59,26 @@ namespace SourceGit.Commands
                 proc.StartInfo = CreateGitStartInfo(true);
                 proc.Start();
 
+                using var cancellation = CancellationToken.Register(() =>
+                {
+                    try
+                    {
+                        if (!proc.HasExited)
+                            proc.Kill(true);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // The query may finish while cancellation is being requested.
+                    }
+                    catch (System.ComponentModel.Win32Exception)
+                    {
+                        // A process that is already exiting may no longer be accessible.
+                    }
+                });
+                var stderr = proc.StandardError.ReadToEndAsync();
+
                 var findHead = false;
-                while (await proc.StandardOutput.ReadLineAsync().ConfigureAwait(false) is { } line)
+                while (await proc.StandardOutput.ReadLineAsync(CancellationToken).ConfigureAwait(false) is { } line)
                 {
                     var parts = line.Split('\0');
                     if (parts.Length != 8)
@@ -80,27 +98,36 @@ namespace SourceGit.Commands
                         findHead = true;
                 }
 
-                await proc.WaitForExitAsync().ConfigureAwait(false);
+                await proc.WaitForExitAsync(CancellationToken).ConfigureAwait(false);
+                var error = await stderr.ConfigureAwait(false);
+                if (proc.ExitCode != 0)
+                {
+                    if (RaiseError && !string.IsNullOrWhiteSpace(error))
+                        RaiseException(error.Trim());
+                    return [];
+                }
 
                 if (_markMerged && !findHead && commits.Count > 0)
                 {
-                    var set = await new QueryCurrentBranchCommitHashes(WorkingDirectory, commits[^1].CommitterTime)
+                    var set = await new QueryHistoryCommitHashes(WorkingDirectory, ["HEAD"], commits, false) { CancellationToken = CancellationToken }
                         .GetResultAsync()
                         .ConfigureAwait(false);
 
                     foreach (var c in commits)
                     {
                         if (set.Contains(c.SHA))
-                        {
                             c.IsMerged = true;
-                            break;
-                        }
                     }
                 }
             }
+            catch (OperationCanceledException) when (CancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
             catch (Exception e)
             {
-                RaiseException($"Failed to query commits. Reason: {e.Message}");
+                if (RaiseError && !CancellationToken.IsCancellationRequested)
+                    RaiseException($"Failed to query commits. Reason: {e.Message}");
             }
 
             return commits;

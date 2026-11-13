@@ -1,0 +1,56 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:m="using:SourceGit.Models"
+             xmlns:v="using:SourceGit.Views"
+             xmlns:c="using:SourceGit.Converters"
+             x:Class="SourceGit.Views.HistoryBranchPicker"
+             x:DataType="v:HistoryBranchPicker"
+             x:Name="ThisControl"
+             Width="360"
+             Loaded="OnPickerLoaded">
+  <Grid RowDefinitions="Auto,Auto">
+    <TextBox Grid.Row="0"
+             x:Name="FilterBox"
+             Watermark="{DynamicResource Text.Histories.AddBranch.Search}"
+             TextChanged="OnFilterChanged"
+             KeyDown="OnFilterKeyDown"/>
+
+    <ListBox Grid.Row="1"
+             x:Name="BranchesList"
+             Margin="0,8,0,0"
+             MaxHeight="320"
+             Background="Transparent"
+             BorderThickness="0"
+             ItemsSource="{Binding #ThisControl.VisibleBranches}"
+             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+             KeyDown="OnBranchesKeyDown">
+      <ListBox.Styles>
+        <Style Selector="ListBoxItem">
+          <Setter Property="Padding" Value="8,4"/>
+          <Setter Property="CornerRadius" Value="3"/>
+        </Style>
+      </ListBox.Styles>
+      <ListBox.ItemTemplate>
+        <DataTemplate DataType="m:Branch" x:DataType="m:Branch">
+          <Border Background="Transparent" PointerReleased="OnBranchPointerReleased">
+            <Grid ColumnDefinitions="Auto,*">
+              <Path Grid.Column="0" Width="14" Height="14" Data="{StaticResource Icons.Branch}"/>
+              <TextBlock Grid.Column="1"
+                         Margin="8,0,0,0"
+                         Text="{Binding FriendlyName}"
+                         TextTrimming="CharacterEllipsis"
+                         ToolTip.Tip="{Binding FriendlyName}"/>
+            </Grid>
+          </Border>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+
+    <TextBlock Grid.Row="1"
+               Margin="8"
+               Text="{DynamicResource Text.Histories.AddBranch.Empty}"
+               TextWrapping="Wrap"
+               Foreground="{DynamicResource Brush.FG2}"
+               IsVisible="{Binding #ThisControl.VisibleBranches, Converter={x:Static c:ListConverters.IsNullOrEmpty}}"/>
+  </Grid>
+</UserControl>

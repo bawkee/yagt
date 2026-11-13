@@ -10,8 +10,109 @@
              x:Class="SourceGit.Views.Histories"
              x:DataType="vm:Histories"
              x:Name="ThisControl">
-  <Grid>
-    <v:HistoriesCommitList x:Name="CommitListContainer"
+  <Grid RowDefinitions="Auto,*">
+    <Border Grid.Row="0"
+            x:Name="HistoryFocusBar"
+            Padding="8,4"
+            Background="{DynamicResource Brush.Contents}"
+            BorderBrush="{DynamicResource Brush.Border0}"
+            BorderThickness="0,0,0,1"
+            IsVisible="{Binding IsBranchHistoryMode}">
+      <Grid ColumnDefinitions="*,Auto">
+        <ScrollViewer Grid.Column="0"
+                      Margin="0,0,6,0"
+                      HorizontalScrollBarVisibility="Hidden"
+                      VerticalScrollBarVisibility="Disabled">
+          <StackPanel x:Name="HistoryBranchesPanel" Orientation="Horizontal" Spacing="6">
+            <Border x:Name="SelectedHistoryBranchChip"
+                    Height="26"
+                    Padding="6,0"
+                    CornerRadius="3"
+                    BorderThickness="1"
+                    BorderBrush="{DynamicResource Brush.Border2}"
+                    ToolTip.Tip="{Binding HistoryScopeDescription}">
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <Path Width="12" Height="12" Data="{StaticResource Icons.Branch}"/>
+                <TextBlock Text="{Binding HistoryBranchName}"
+                           MaxWidth="240"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"/>
+              </StackPanel>
+            </Border>
+
+            <Border x:Name="IncludedCurrentHistoryBranchChip"
+                    Height="26"
+                    Padding="6,0,0,0"
+                    CornerRadius="3"
+                    BorderThickness="1"
+                    BorderBrush="{DynamicResource Brush.Border2}"
+                    IsVisible="{Binding ShowIncludedCurrentHistoryBranch}">
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <Path Width="12" Height="12" Data="{StaticResource Icons.Check}"/>
+                <TextBlock Text="{Binding IncludedCurrentHistoryBranchName}"
+                           MaxWidth="240"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"
+                           ToolTip.Tip="{Binding IncludedCurrentHistoryBranchName}"/>
+                <Button Classes="icon_button"
+                        Width="24" Height="24"
+                        Click="OnRemoveCurrentHistoryBranch"
+                        ToolTip.Tip="{DynamicResource Text.Histories.RemoveBranch}">
+                  <Path Width="8" Height="8" Data="{StaticResource Icons.Close}"/>
+                </Button>
+              </StackPanel>
+            </Border>
+
+            <ItemsControl ItemsSource="{Binding AdditionalHistoryBranches}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel Orientation="Horizontal" Spacing="6"/>
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="m:Branch" x:DataType="m:Branch">
+                  <Border Height="26"
+                          Padding="6,0,0,0"
+                          CornerRadius="3"
+                          BorderThickness="1"
+                          BorderBrush="{DynamicResource Brush.Border2}">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                      <Path Width="12" Height="12" Data="{StaticResource Icons.Branch}"/>
+                      <TextBlock Text="{Binding FriendlyName}"
+                                 MaxWidth="240"
+                                 VerticalAlignment="Center"
+                                 TextTrimming="CharacterEllipsis"
+                                 ToolTip.Tip="{Binding FriendlyName}"/>
+                      <Button Classes="icon_button"
+                              Width="24" Height="24"
+                              Click="OnRemoveHistoryBranch"
+                              ToolTip.Tip="{DynamicResource Text.Histories.RemoveBranch}">
+                        <Path Width="8" Height="8" Data="{StaticResource Icons.Close}"/>
+                      </Button>
+                    </StackPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </ScrollViewer>
+
+        <Button Grid.Column="1"
+                x:Name="AddHistoryBranchButton"
+                Classes="flat"
+                Height="26"
+                Padding="8,0"
+                Click="OnAddHistoryBranch">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <Path Width="12" Height="12" Data="{StaticResource Icons.Plus}"/>
+            <TextBlock Text="{DynamicResource Text.Histories.AddBranch}" VerticalAlignment="Center"/>
+          </StackPanel>
+        </Button>
+      </Grid>
+    </Border>
+
+    <v:HistoriesCommitList Grid.Row="1"
+                           x:Name="CommitListContainer"
                            Classes="static_scrollbar"
                            ScrollViewer.AllowAutoHide="False"
                            Background="Transparent"
@@ -147,7 +248,7 @@
                                             Subject="{Binding Subject}"
                                             IssueTrackers="{Binding $parent[v:Histories].IssueTrackers}"
                                             FontWeight="{Binding IsCurrentHead, Converter={x:Static c:BoolConverters.IsBoldToFontWeight}}"
-                                            Opacity="{Binding IsMerged, Converter={x:Static c:BoolConverters.IsMergedToOpacity}}"/>
+                                            Opacity="{Binding HistoryOpacity}"/>
                 </Grid>
               </Border>
             </DataTemplate>
@@ -168,13 +269,13 @@
                           HorizontalAlignment="Left"
                           VerticalAlignment="Center"
                           User="{Binding Author}"
-                          Opacity="{Binding IsMerged, Converter={x:Static c:BoolConverters.IsMergedToOpacity}}"
+                          Opacity="{Binding HistoryOpacity}"
                           IsHitTestVisible="False"/>
 
                 <Border Grid.Column="1" Padding="8,0" ClipToBounds="True">
                   <TextBlock Text="{Binding Author.Name}"
                              FontWeight="{Binding IsCurrentHead, Converter={x:Static c:BoolConverters.IsBoldToFontWeight}}"
-                             Opacity="{Binding IsMerged, Converter={x:Static c:BoolConverters.IsMergedToOpacity}}"
+                             Opacity="{Binding HistoryOpacity}"
                              HorizontalAlignment="Left"/>
                 </Border>
               </Grid>
@@ -193,7 +294,7 @@
                 <TextBlock Text="{Binding SHA, Converter={x:Static c:StringConverters.ToShortSHA}}"
                            FontFamily="{DynamicResource Fonts.Monospace}"
                            FontWeight="{Binding IsCurrentHead, Converter={x:Static c:BoolConverters.IsBoldToFontWeight}}"
-                           Opacity="{Binding IsMerged, Converter={x:Static c:BoolConverters.IsMergedToOpacity}}"/>
+                           Opacity="{Binding HistoryOpacity}"/>
               </Border>
             </DataTemplate>
           </DataGridTemplateColumn.CellTemplate>
@@ -209,7 +310,7 @@
               <Border Padding="8,0" Background="Transparent" ClipToBounds="True">
                 <v:CommitTimeTextBlock FontFeatures="+tnum"
                                        FontWeight="{Binding IsCurrentHead, Converter={x:Static c:BoolConverters.IsBoldToFontWeight}}"
-                                       Opacity="{Binding IsMerged, Converter={x:Static c:BoolConverters.IsMergedToOpacity}}"
+                                       Opacity="{Binding HistoryOpacity}"
                                        Timestamp="{Binding AuthorTime, Mode=OneWay}"
                                        ShowAsDateTime="{Binding Source={x:Static vm:Preferences.Instance}, Path=!DisplayTimeAsPeriodInHistories, Mode=OneWay}"
                                        DateTimeFormat="{Binding Source={x:Static vm:Preferences.Instance}, Path=DateTimeFormat, Mode=OneWay}"
@@ -229,7 +330,7 @@
               <Border Padding="8,0" Background="Transparent" ClipToBounds="True">
                 <v:CommitTimeTextBlock FontWeight="{Binding IsCurrentHead, Converter={x:Static c:BoolConverters.IsBoldToFontWeight}}"
                                        FontFeatures="+tnum"
-                                       Opacity="{Binding IsMerged, Converter={x:Static c:BoolConverters.IsMergedToOpacity}}"
+                                       Opacity="{Binding HistoryOpacity}"
                                        Timestamp="{Binding CommitterTime, Mode=OneWay}"
                                        ShowAsDateTime="{Binding Source={x:Static vm:Preferences.Instance}, Path=!DisplayTimeAsPeriodInHistories, Mode=OneWay}"
                                        DateTimeFormat="{Binding Source={x:Static vm:Preferences.Instance}, Path=DateTimeFormat, Mode=OneWay}"
@@ -241,7 +342,8 @@
       </DataGrid.Columns>
     </v:HistoriesCommitList>
 
-    <Border Background="Transparent"
+    <Border Grid.Row="1"
+            Background="Transparent"
             Height="24"
             HorizontalAlignment="Stretch" VerticalAlignment="Top"
             PointerMoved="OnCommitListHeaderPointerMoved"
@@ -263,7 +365,8 @@
           <Path Width="14" Height="14" Data="{StaticResource Icons.Search}"/>
         </ToggleButton>
 
-        <Button Classes="icon_button"
+        <Button x:Name="HistoryAdvancedOptionsButton"
+                Classes="icon_button"
                 Width="18" Height="18"
                 HorizontalAlignment="Left" VerticalAlignment="Center"
                 Click="OnOpenAdvancedOptions"
@@ -274,7 +377,8 @@
       </StackPanel>
     </Border>
 
-    <v:CommitGraph x:Name="CommitGraph"
+    <v:CommitGraph Grid.Row="1"
+                   x:Name="CommitGraph"
                    Margin="0,24,0,0"
                    Graph="{Binding Graph}"
                    DotBrush="{DynamicResource Brush.Contents}"
@@ -283,7 +387,8 @@
                    ClipToBounds="True"
                    Loaded="OnCommitGraphLoaded"/>
 
-    <Border Width="28" Height="28"
+    <Border Grid.Row="1"
+            Width="28" Height="28"
             Margin="0,0,16,8"
             CornerRadius="14"
             Background="{DynamicResource Brush.Popup}"
@@ -297,6 +402,6 @@
             Opacity=".8"/>
     </Border>
 
-    <v:LoadingIcon Width="48" Height="48" HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="{Binding IsLoading}"/>
+    <v:LoadingIcon Grid.Row="1" Width="48" Height="48" HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="{Binding IsLoading}"/>
   </Grid>
 </UserControl>

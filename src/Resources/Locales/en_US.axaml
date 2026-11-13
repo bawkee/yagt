@@ -526,7 +526,11 @@
   <x:String x:Key="Text.GitLFS.Track" xml:space="preserve">Track files named '{0}'</x:String>
   <x:String x:Key="Text.GitLFS.TrackByExtension" xml:space="preserve">Track all *{0} files</x:String>
   <x:String x:Key="Text.GotoRevisionSelector" xml:space="preserve">Select Commit</x:String>
+  <x:String x:Key="Text.Histories.AddBranch" xml:space="preserve">Add branch</x:String>
+  <x:String x:Key="Text.Histories.AddBranch.Empty" xml:space="preserve">No matching branches to add.</x:String>
+  <x:String x:Key="Text.Histories.AddBranch.Search" xml:space="preserve">Find a branch...</x:String>
   <x:String x:Key="Text.Histories.AdvancedOptions" xml:space="preserve">Advanced Options</x:String>
+  <x:String x:Key="Text.Histories.FocusedHistory" xml:space="preserve">Focused history</x:String>
   <x:String x:Key="Text.Histories.Header.Author" xml:space="preserve">AUTHOR</x:String>
   <x:String x:Key="Text.Histories.Header.AuthorTime" xml:space="preserve">AUTHOR TIME</x:String>
   <x:String x:Key="Text.Histories.Header.CommitTime" xml:space="preserve">COMMIT TIME</x:String>
@@ -537,8 +541,22 @@
   <x:String x:Key="Text.Histories.HighlightsInGraph.All" xml:space="preserve">All</x:String>
   <x:String x:Key="Text.Histories.HighlightsInGraph.CurrentBranchOnly" xml:space="preserve">Current Branch Only</x:String>
   <x:String x:Key="Text.Histories.HighlightsInGraph.CurrentBranchAndSelectedCommits" xml:space="preserve">Current Branch &amp; Selected Commits</x:String>
+  <x:String x:Key="Text.Histories.HighlightsInGraph.SelectedBranchOnly" xml:space="preserve">Selected Branch Only</x:String>
   <x:String x:Key="Text.Histories.HighlightsInGraph.SelectedCommitsOnly" xml:space="preserve">Selected Commits Only</x:String>
   <x:String x:Key="Text.Histories.HighlightsInGraph.SelectedCommitsOnlyFirstParent" xml:space="preserve">Selected Commits (First-parent Only)</x:String>
+  <x:String x:Key="Text.Histories.HistoryScope" xml:space="preserve">HISTORY SCOPE</x:String>
+  <x:String x:Key="Text.Histories.IncludeCurrentBranch" xml:space="preserve">Include checked-out branch</x:String>
+  <x:String x:Key="Text.Histories.RemoveBranch" xml:space="preserve">Remove branch from history focus</x:String>
+  <x:String x:Key="Text.Histories.Scope.Branch" xml:space="preserve">History of {0}</x:String>
+  <x:String x:Key="Text.Histories.Scope.Custom" xml:space="preserve">Custom history filters</x:String>
+  <x:String x:Key="Text.Histories.Scope.FirstParent" xml:space="preserve">{0} · first parent only</x:String>
+  <x:String x:Key="Text.Histories.Scope.Limited" xml:space="preserve">{0} · latest {1} commits</x:String>
+  <x:String x:Key="Text.Histories.Scope.MissingBranch" xml:space="preserve">Branch no longer exists: {0}</x:String>
+  <x:String x:Key="Text.Histories.Scope.NoBranch" xml:space="preserve">Select a branch to follow its history</x:String>
+  <x:String x:Key="Text.Histories.Scope.Repository" xml:space="preserve">All branches and tags</x:String>
+  <x:String x:Key="Text.Histories.Scope.TargetOutsideLimit" xml:space="preserve">{0} · branch tip outside loaded history</x:String>
+  <x:String x:Key="Text.Histories.Scope.WithAdditional" xml:space="preserve">{0} · additional branches: {1}</x:String>
+  <x:String x:Key="Text.Histories.Scope.WithCurrent" xml:space="preserve">History of {0} and checked-out {1}</x:String>
   <x:String x:Key="Text.Histories.Selected" xml:space="preserve">SELECTED {0} COMMITS</x:String>
   <x:String x:Key="Text.Histories.ShowColumns" xml:space="preserve">SHOW COLUMNS</x:String>
   <x:String x:Key="Text.Histories.Tips" xml:space="preserve">Hold 'Ctrl' or 'Shift' to select multiple commits.</x:String>

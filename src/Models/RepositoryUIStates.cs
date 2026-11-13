@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Avalonia.Collections;
 
 namespace SourceGit.Models
@@ -56,6 +57,37 @@ namespace SourceGit.Models
             get;
             set;
         } = CommitGraphHighlighting.All;
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public HistoryDisplayMode HistoryDisplayMode
+        {
+            get;
+            set;
+        } = HistoryDisplayMode.RepositoryOverview;
+
+        public bool IsHistoryFocused
+        {
+            get;
+            set;
+        } = false;
+
+        public string SelectedHistoryBranch
+        {
+            get;
+            set;
+        } = string.Empty;
+
+        public List<string> AdditionalHistoryBranches
+        {
+            get;
+            set;
+        } = new();
+
+        public bool IncludeCurrentBranchInHistory
+        {
+            get;
+            set;
+        } = false;
 
         public bool HighlightMatchingCommitSubjects
         {
@@ -272,6 +304,18 @@ namespace SourceGit.Models
                 }
             }
 
+            states ??= new RepositoryUIStates();
+            states.SelectedHistoryBranch ??= string.Empty;
+            states.AdditionalHistoryBranches ??= [];
+            states.AdditionalHistoryBranches.RemoveAll(string.IsNullOrEmpty);
+            if (states.HistoryDisplayMode < HistoryDisplayMode.RepositoryOverview || states.HistoryDisplayMode > HistoryDisplayMode.FocusedHistory)
+                states.HistoryDisplayMode = HistoryDisplayMode.RepositoryOverview;
+            if (states.HistoryDisplayMode != HistoryDisplayMode.RepositoryOverview)
+            {
+                states.IsHistoryFocused = states.HistoryDisplayMode == HistoryDisplayMode.FocusedHistory;
+                states.GraphHighlighting = CommitGraphHighlighting.SelectedBranchOnly;
+                states.HistoryDisplayMode = HistoryDisplayMode.RepositoryOverview;
+            }
             states._file = fullpath;
             return states;
         }
@@ -417,7 +461,7 @@ namespace SourceGit.Models
                 HistoryFilters.Remove(filter);
         }
 
-        public string BuildHistoryParams(string gitDir)
+        public string BuildHistoryParams(string gitDir, IReadOnlyList<string> focusedRefs = null)
         {
             var builder = new StringBuilder();
 
@@ -426,7 +470,7 @@ namespace SourceGit.Models
             else
                 builder.Append("--date-order ");
 
-            if (HistoryShowFlags.HasFlag(HistoryShowFlags.Reflog))
+            if (focusedRefs == null && HistoryShowFlags.HasFlag(HistoryShowFlags.Reflog))
                 builder.Append("--reflog ");
 
             if (HistoryShowFlags.HasFlag(HistoryShowFlags.FirstParentOnly))
@@ -434,6 +478,20 @@ namespace SourceGit.Models
 
             if (HistoryShowFlags.HasFlag(HistoryShowFlags.SimplifyByDecoration))
                 builder.Append("--simplify-by-decoration ");
+
+            if (focusedRefs != null)
+            {
+                if (focusedRefs.Count == 0)
+                    builder.Append("--max-count=0 ");
+                else
+                {
+                    foreach (var reference in focusedRefs)
+                        builder.Append(reference.Quoted()).Append(' ');
+                }
+
+                builder.Append("--");
+                return builder.ToString();
+            }
 
             var mode = GetHistoryFilterMode();
             if (mode == FilterMode.None)

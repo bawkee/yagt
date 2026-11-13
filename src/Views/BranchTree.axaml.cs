@@ -448,7 +448,7 @@ namespace SourceGit.Views
             if (node.Backend is not Models.Branch branch)
                 return;
 
-            repo.NavigateToCommit(branch.Head);
+            repo.SelectHistoryBranch(branch);
         }
 
         private void OnNodesSelectionChanged(object _, SelectionChangedEventArgs e)
@@ -475,6 +475,11 @@ namespace SourceGit.Views
             var selected = BranchesPresenter.SelectedItems;
             if (selected == null || selected.Count == 0)
                 return;
+
+            if (selected.Count == 1 && e.AddedItems.Count == 1 &&
+                e.AddedItems[0] is ViewModels.BranchTreeNode { Backend: Models.Branch branch } &&
+                !string.Equals(repo.UIStates.SelectedHistoryBranch, branch.FullName, StringComparison.Ordinal))
+                repo.SelectHistoryBranch(branch);
 
             ViewModels.BranchTreeNode prev = null;
             foreach (var row in Rows)

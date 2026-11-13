@@ -10,7 +10,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace SourceGit.ViewModels
 {
-    public class Histories : ObservableObject
+    public partial class Histories : ObservableObject
     {
         public bool IsLoading
         {
@@ -149,8 +149,16 @@ namespace SourceGit.ViewModels
             {
                 if (_repo.UIStates.GraphHighlighting != value)
                 {
+                    var wasSelectedBranchHighlighting = IsSelectedBranchHighlighting;
                     _repo.UIStates.GraphHighlighting = value;
-                    GenerateGraph(_commits);
+                    NotifyHistoryScopeChanged();
+                    if (IsHistoryFocused)
+                        return;
+
+                    if (wasSelectedBranchHighlighting || IsSelectedBranchHighlighting)
+                        _repo.RefreshCommits();
+                    else
+                        GenerateGraph(_commits);
                 }
             }
         }
@@ -188,7 +196,14 @@ namespace SourceGit.ViewModels
         public Models.Branch CurrentBranch
         {
             get => _currentBranch;
-            set => SetProperty(ref _currentBranch, value);
+            set
+            {
+                if (SetProperty(ref _currentBranch, value))
+                {
+                    RefreshAdditionalHistoryBranches();
+                    NotifyHistoryScopeChanged();
+                }
+            }
         }
 
         public bool HasSingleRemote
@@ -272,6 +287,7 @@ namespace SourceGit.ViewModels
                 _repo.UIStates.HistoryShowFlags -= flag;
             else
                 _repo.UIStates.HistoryShowFlags |= flag;
+            OnPropertyChanged(nameof(HistoryScopeDescription));
             _repo.RefreshCommits();
         }
 
@@ -585,23 +601,29 @@ namespace SourceGit.ViewModels
                 DetailContext = new Models.Count(_selectedCommits.Count);
             }
 
-            if (_repo.UIStates.GraphHighlighting >= Models.CommitGraphHighlighting.SelectedCommitsOnly)
+            if (!IsHistoryFocused && _repo.UIStates.GraphHighlighting is (Models.CommitGraphHighlighting.SelectedCommitsOnly or
+                Models.CommitGraphHighlighting.CurrentBranchAndSelectedCommits or Models.CommitGraphHighlighting.SelectedCommitsOnlyFirstParent))
                 GenerateGraph(_commits);
         }
 
         private void GenerateGraph(List<Models.Commit> commits)
         {
             var firstParentOnly = _repo.UIStates.HistoryShowFlags.HasFlag(Models.HistoryShowFlags.FirstParentOnly);
-            var highlighting = _repo.UIStates.GraphHighlighting;
+            var highlighting = IsHistoryFocused ? Models.CommitGraphHighlighting.All : _repo.UIStates.GraphHighlighting;
             var extraHeads = new HashSet<string>();
 
-            if (highlighting >= Models.CommitGraphHighlighting.SelectedCommitsOnly)
+            if (highlighting is Models.CommitGraphHighlighting.SelectedCommitsOnly or
+                Models.CommitGraphHighlighting.CurrentBranchAndSelectedCommits or Models.CommitGraphHighlighting.SelectedCommitsOnlyFirstParent)
             {
                 foreach (var c in _selectedCommits)
                     extraHeads.Add(c.SHA);
             }
 
-            Graph = Models.CommitGraph.Generate(commits, firstParentOnly, highlighting, extraHeads);
+            Graph = Models.CommitGraph.Generate(commits, firstParentOnly, highlighting, extraHeads,
+                !IsHistoryFocused && IsSelectedBranchHighlighting ? _historyHighlights : null);
+
+            foreach (var commit in commits)
+                commit.HistoryOpacity = (IsBranchHistoryMode ? commit.IsHighlightedInGraph : commit.IsMerged) ? 1 : 0.65;
         }
 
         private void RebuildSubjectIndex()

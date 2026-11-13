@@ -15,6 +15,7 @@ namespace SourceGit.Models
         SelectedCommitsOnly,
         CurrentBranchAndSelectedCommits,
         SelectedCommitsOnlyFirstParent,
+        SelectedBranchOnly,
     }
 
     public class CommitGraph
@@ -71,7 +72,7 @@ namespace SourceGit.Models
         public List<Link> Links { get; } = [];
         public List<Dot> Dots { get; } = [];
 
-        public static CommitGraph Generate(List<Commit> commits, bool firstParentOnlyEnabled, CommitGraphHighlighting highlighting, HashSet<string> highlightExtraCommits)
+        public static CommitGraph Generate(List<Commit> commits, bool firstParentOnlyEnabled, CommitGraphHighlighting highlighting, HashSet<string> highlightExtraCommits, HashSet<string> highlightedCommits = null)
         {
             const double unitWidth = 12;
             const double halfWidth = 6;
@@ -142,7 +143,11 @@ namespace SourceGit.Models
                 ended.Clear();
 
                 // Calculate highlighted state
-                if (!isHighlighted)
+                if (highlightedCommits != null)
+                {
+                    isHighlighted = highlightedCommits.Contains(commit.SHA);
+                }
+                else if (!isHighlighted)
                 {
                     switch (highlighting)
                     {
@@ -210,7 +215,7 @@ namespace SourceGit.Models
                 // Deal with other parents (the first parent has been processed)
                 if (!firstParentOnlyEnabled)
                 {
-                    if (highlighting == CommitGraphHighlighting.SelectedCommitsOnlyFirstParent)
+                    if (highlightedCommits == null && highlighting == CommitGraphHighlighting.SelectedCommitsOnlyFirstParent)
                         isHighlighted = false;
 
                     for (int j = 1; j < commit.Parents.Count; j++)

@@ -885,6 +885,13 @@ namespace SourceGit.ViewModels
 
             var newFullName = $"refs/heads/{newName}";
             _uiStates.RenameBranchFilter(b.FullName, newFullName);
+            if (b.FullName.Equals(_uiStates.SelectedHistoryBranch, StringComparison.Ordinal))
+                _uiStates.SelectedHistoryBranch = newFullName;
+            for (var i = 0; i < _uiStates.AdditionalHistoryBranches.Count; i++)
+            {
+                if (b.FullName.Equals(_uiStates.AdditionalHistoryBranches[i], StringComparison.Ordinal))
+                    _uiStates.AdditionalHistoryBranches[i] = newFullName;
+            }
 
             var renamed = new Models.Branch
             {
@@ -919,6 +926,7 @@ namespace SourceGit.ViewModels
             var builder = BuildBranchTree(locals, [], false);
             LocalBranchTrees = builder.Locals;
 
+            _histories?.RefreshHistoryBranches();
             RefreshCommits();
             RefreshWorktrees();
         }
@@ -975,6 +983,26 @@ namespace SourceGit.ViewModels
             }
         }
 
+        public void SelectHistoryBranch(Models.Branch branch)
+        {
+            if (_histories == null || branch == null)
+                return;
+
+            var name = branch.IsDetachedHead ? "HEAD" : branch.FullName;
+            if (_histories.IsHistoryFocused &&
+                !name.Equals(_uiStates.SelectedHistoryBranch, StringComparison.Ordinal))
+            {
+                SelectedViewIndex = 0;
+                _navigateToCommitDelayed = branch.Head;
+                _histories.SetHistoryBranch(branch);
+            }
+            else
+            {
+                _histories.SetHistoryBranch(branch);
+                NavigateToCommit(branch.Head);
+            }
+        }
+
         public void SetCommitMessage(string message)
         {
             if (_workingCopy is not null)
@@ -1000,6 +1028,7 @@ namespace SourceGit.ViewModels
             ResetBranchTreeFilterMode(LocalBranchTrees);
             ResetBranchTreeFilterMode(RemoteBranchTrees);
             ResetTagFilterMode();
+            _histories?.NotifyHistoryScopeChanged();
             RefreshCommits();
         }
 
@@ -1198,6 +1227,9 @@ namespace SourceGit.ViewModels
                     LocalBranchTrees = builder.Locals;
                     RemoteBranchTrees = builder.Remotes;
 
+                    if (_histories != null && _histories.RefreshHistoryBranches() && _histories.IsBranchHistoryMode)
+                        RefreshCommits();
+
                     ValidateHistoryFilters(true);
 
                     var localBranchesCount = 0;
@@ -1252,55 +1284,103 @@ namespace SourceGit.ViewModels
 
         public void RefreshCommits()
         {
-            if (_cancellationRefreshCommits is { IsCancellationRequested: false })
-                _cancellationRefreshCommits.Cancel();
-
-            _cancellationRefreshCommits = new CancellationTokenSource();
-            var token = _cancellationRefreshCommits.Token;
+            var cancellation = new CancellationTokenSource();
+            var token = cancellation.Token;
+            Interlocked.Exchange(ref _cancellationRefreshCommits, cancellation)?.Cancel();
 
             Task.Run(async () =>
             {
-                await Dispatcher.UIThread.InvokeAsync(() => _histories.IsLoading = true);
-
-                var builder = new StringBuilder();
-                builder
-                    .Append('-').Append(Preferences.Instance.MaxHistoryCommits).Append(' ')
-                    .Append(_uiStates.BuildHistoryParams(GitDir));
-
-                var commits = await new Commands.QueryCommits(FullPath, builder.ToString())
-                    .GetResultAsync()
-                    .ConfigureAwait(false);
-
-                var merged = new HashSet<string>();
-                foreach (var c in commits)
+                try
                 {
-                    if (merged.Remove(c.SHA))
-                        c.IsMerged = true;
-
-                    if (c.IsMerged)
+                    var request = await Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        foreach (var p in c.Parents)
-                            merged.Add(p);
-                    }
-                }
+                        if (token.IsCancellationRequested || !ReferenceEquals(_cancellationRefreshCommits, cancellation) || _histories == null)
+                            return default;
 
-                Dispatcher.UIThread.Invoke(() =>
-                {
+                        _histories.IsLoading = true;
+                        var focused = _histories.IsHistoryFocused;
+                        var selectedBranchHighlighting = _histories.IsSelectedBranchHighlighting;
+                        var refs = _histories.GetHistoryRefs();
+                        var limits = $"-{Preferences.Instance.MaxHistoryCommits} " +
+                            _uiStates.BuildHistoryParams(GitDir, focused ? refs : null);
+                        return (Focused: focused, SelectedBranchHighlighting: selectedBranchHighlighting, Refs: refs, Limits: limits,
+                            FirstParentOnly: _uiStates.HistoryShowFlags.HasFlag(Models.HistoryShowFlags.FirstParentOnly),
+                            CanUseLoadedGraph: _uiStates.GetHistoryFilterMode() == Models.FilterMode.None &&
+                                !_uiStates.HistoryShowFlags.HasFlag(Models.HistoryShowFlags.SimplifyByDecoration));
+                    });
+
+                    if (token.IsCancellationRequested || request.Refs == null)
+                        return;
+
+                    var commits = request.Focused && request.Refs.Count == 0 ?
+                        [] : await new Commands.QueryCommits(FullPath, request.Limits) { CancellationToken = token }
+                            .GetResultAsync()
+                            .ConfigureAwait(false);
+
                     if (token.IsCancellationRequested)
                         return;
 
-                    if (_histories != null)
+                    var highlightedCommits = new HashSet<string>(StringComparer.Ordinal);
+                    if (request.SelectedBranchHighlighting && request.Focused)
                     {
-                        _histories.IsLoading = false;
-                        _histories.Commits = commits;
-                        BisectState = _histories.UpdateBisectInfo();
-
-                        if (!string.IsNullOrEmpty(_navigateToCommitDelayed))
-                            NavigateToCommit(_navigateToCommitDelayed);
+                        foreach (var commit in commits)
+                            highlightedCommits.Add(commit.SHA);
+                    }
+                    else if (request.SelectedBranchHighlighting)
+                    {
+                        highlightedCommits = await new Commands.QueryHistoryCommitHashes(FullPath, request.Refs, commits, request.FirstParentOnly, request.CanUseLoadedGraph)
+                        { CancellationToken = token }.GetResultAsync().ConfigureAwait(false);
                     }
 
-                    _navigateToCommitDelayed = string.Empty;
-                });
+                    var merged = new HashSet<string>();
+                    foreach (var c in commits)
+                    {
+                        if (merged.Remove(c.SHA))
+                            c.IsMerged = true;
+
+                        if (c.IsMerged)
+                        {
+                            foreach (var p in c.Parents)
+                                merged.Add(p);
+                        }
+                    }
+
+                    Dispatcher.UIThread.Invoke(() =>
+                    {
+                        if (token.IsCancellationRequested || !ReferenceEquals(_cancellationRefreshCommits, cancellation))
+                            return;
+
+                        if (_histories != null)
+                        {
+                            _histories.IsLoading = false;
+                            _histories.SetHistoryCommits(commits, highlightedCommits);
+                            BisectState = _histories.UpdateBisectInfo();
+
+                            if (!string.IsNullOrEmpty(_navigateToCommitDelayed))
+                                NavigateToCommit(_navigateToCommitDelayed);
+                            else if (request.Focused &&
+                                _histories.SelectedCommits.Count == 0 && commits.Count > 0)
+                                NavigateToCommit(commits.Find(x => request.Refs.Count > 0 && x.SHA.Equals(request.Refs[0], StringComparison.Ordinal))?.SHA ?? commits[0].SHA);
+                        }
+
+                        _navigateToCommitDelayed = string.Empty;
+                    });
+                }
+                catch (OperationCanceledException) when (token.IsCancellationRequested)
+                {
+                    // A newer history request owns the loading state and results.
+                }
+                catch (Exception ex)
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        if (!token.IsCancellationRequested && ReferenceEquals(_cancellationRefreshCommits, cancellation) && _histories != null)
+                        {
+                            _histories.IsLoading = false;
+                            SendNotification($"Failed to refresh history. Reason: {ex.Message}", true);
+                        }
+                    });
+                }
             }, token);
         }
 
@@ -1808,6 +1888,9 @@ namespace SourceGit.ViewModels
             HistoryFilterMode = _uiStates.GetHistoryFilterMode();
             if (!refresh)
                 return;
+
+            _uiStates.IsHistoryFocused = false;
+            _histories?.NotifyHistoryScopeChanged();
 
             var map = _uiStates.GetHistoryFiltersMap();
             UpdateBranchTreeFilterMode(LocalBranchTrees, map);

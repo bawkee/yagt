@@ -444,6 +444,36 @@ namespace SourceGit.Views
             _resizingAuthorColumn = false;
         }
 
+        private void OnAddHistoryBranch(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button || DataContext is not ViewModels.Histories histories)
+                return;
+
+            var picker = new HistoryBranchPicker() { Branches = histories.AvailableHistoryBranches };
+            var flyout = new Flyout() { Content = picker, Placement = PlacementMode.BottomEdgeAlignedRight };
+            picker.BranchSelected += branch =>
+            {
+                histories.AddHistoryBranch(branch);
+                flyout.Hide();
+            };
+            flyout.ShowAt(button);
+            e.Handled = true;
+        }
+
+        private void OnRemoveHistoryBranch(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.Histories histories && sender is Button { DataContext: Models.Branch branch })
+                histories.RemoveHistoryBranch(branch);
+            e.Handled = true;
+        }
+
+        private void OnRemoveCurrentHistoryBranch(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.Histories histories)
+                histories.RemoveCurrentHistoryBranch();
+            e.Handled = true;
+        }
+
         private void OnOpenAdvancedOptions(object sender, RoutedEventArgs e)
         {
             if (sender is not Button button)
@@ -497,6 +527,7 @@ namespace SourceGit.Views
             var reflog = new MenuItem();
             reflog.Header = App.Text("Repository.ShowLostCommits");
             reflog.Tag = "--reflog";
+            reflog.IsEnabled = !histories.IsHistoryFocused;
             if (histories.HasShowFlag(Models.HistoryShowFlags.Reflog))
                 reflog.Icon = this.CreateMenuIcon("Icons.Check");
             reflog.Click += (_, ev) =>
@@ -557,8 +588,9 @@ namespace SourceGit.Views
             highlights.Header = new TextBlock() { Text = App.Text("Histories.HighlightsInGraph"), FontWeight = FontWeight.Bold };
             highlights.IsEnabled = false;
 
-            var all = new MenuItem();
+            var all = new MenuItem() { Name = "AllHistoryMenuItem" };
             all.Header = App.Text("Histories.HighlightsInGraph.All");
+            all.IsEnabled = !histories.IsHistoryFocused;
             if (histories.GraphHighlighting == Models.CommitGraphHighlighting.All)
                 all.Icon = this.CreateMenuIcon("Icons.Check");
             all.Click += (_, ev) =>
@@ -567,9 +599,11 @@ namespace SourceGit.Views
                 ev.Handled = true;
             };
 
-            var currentBranchOnly = new MenuItem();
+            var currentBranchOnly = new MenuItem() { Name = "CurrentBranchHistoryMenuItem" };
             currentBranchOnly.Header = App.Text("Histories.HighlightsInGraph.CurrentBranchOnly");
-            if (histories.GraphHighlighting == Models.CommitGraphHighlighting.CurrentBranchOnly)
+            currentBranchOnly.IsEnabled = !histories.IsHistoryFocused;
+            if (histories.GraphHighlighting == Models.CommitGraphHighlighting.CurrentBranchOnly ||
+                (histories.IsSelectedBranchHighlighting && !histories.CanHighlightSelectedBranch))
                 currentBranchOnly.Icon = this.CreateMenuIcon("Icons.Check");
             currentBranchOnly.Click += (_, ev) =>
             {
@@ -577,8 +611,20 @@ namespace SourceGit.Views
                 ev.Handled = true;
             };
 
-            var selectedCommitsOnly = new MenuItem();
+            var selectedBranchOnly = new MenuItem() { Name = "SelectedBranchHistoryMenuItem" };
+            selectedBranchOnly.Header = App.Text("Histories.HighlightsInGraph.SelectedBranchOnly");
+            selectedBranchOnly.IsEnabled = !histories.IsHistoryFocused;
+            if (histories.IsSelectedBranchHighlighting)
+                selectedBranchOnly.Icon = this.CreateMenuIcon("Icons.Check");
+            selectedBranchOnly.Click += (_, ev) =>
+            {
+                histories.GraphHighlighting = Models.CommitGraphHighlighting.SelectedBranchOnly;
+                ev.Handled = true;
+            };
+
+            var selectedCommitsOnly = new MenuItem() { Name = "SelectedCommitsHistoryMenuItem" };
             selectedCommitsOnly.Header = App.Text("Histories.HighlightsInGraph.SelectedCommitsOnly");
+            selectedCommitsOnly.IsEnabled = !histories.IsHistoryFocused;
             if (histories.GraphHighlighting == Models.CommitGraphHighlighting.SelectedCommitsOnly)
                 selectedCommitsOnly.Icon = this.CreateMenuIcon("Icons.Check");
             selectedCommitsOnly.Click += (_, ev) =>
@@ -587,8 +633,9 @@ namespace SourceGit.Views
                 ev.Handled = true;
             };
 
-            var selectedCommitsOnlyFirstParent = new MenuItem();
+            var selectedCommitsOnlyFirstParent = new MenuItem() { Name = "SelectedCommitsFirstParentHistoryMenuItem" };
             selectedCommitsOnlyFirstParent.Header = App.Text("Histories.HighlightsInGraph.SelectedCommitsOnlyFirstParent");
+            selectedCommitsOnlyFirstParent.IsEnabled = !histories.IsHistoryFocused;
             if (histories.GraphHighlighting == Models.CommitGraphHighlighting.SelectedCommitsOnlyFirstParent)
                 selectedCommitsOnlyFirstParent.Icon = this.CreateMenuIcon("Icons.Check");
             selectedCommitsOnlyFirstParent.Click += (_, ev) =>
@@ -597,8 +644,9 @@ namespace SourceGit.Views
                 ev.Handled = true;
             };
 
-            var currentBranchAndSelectedCommits = new MenuItem();
+            var currentBranchAndSelectedCommits = new MenuItem() { Name = "CurrentBranchAndSelectedCommitsHistoryMenuItem" };
             currentBranchAndSelectedCommits.Header = App.Text("Histories.HighlightsInGraph.CurrentBranchAndSelectedCommits");
+            currentBranchAndSelectedCommits.IsEnabled = !histories.IsHistoryFocused;
             if (histories.GraphHighlighting == Models.CommitGraphHighlighting.CurrentBranchAndSelectedCommits)
                 currentBranchAndSelectedCommits.Icon = this.CreateMenuIcon("Icons.Check");
             currentBranchAndSelectedCommits.Click += (_, ev) =>
@@ -607,13 +655,38 @@ namespace SourceGit.Views
                 ev.Handled = true;
             };
 
-            var matchingSubjects = new MenuItem();
+            var focusedHistory = new MenuItem() { Name = "FocusedHistoryMenuItem" };
+            focusedHistory.Header = App.Text("Histories.FocusedHistory");
+            if (histories.IsHistoryFocused)
+                focusedHistory.Icon = this.CreateMenuIcon("Icons.Check");
+            focusedHistory.Click += (_, ev) =>
+            {
+                histories.IsHistoryFocused = !histories.IsHistoryFocused;
+                ev.Handled = true;
+            };
+
+            var matchingSubjects = new MenuItem() { Name = "MatchingCommitSubjectsHistoryMenuItem" };
             matchingSubjects.Header = App.Text("Histories.HighlightMatchingSubjects");
             if (histories.HighlightMatchingCommitSubjects)
                 matchingSubjects.Icon = this.CreateMenuIcon("Icons.Check");
             matchingSubjects.Click += (_, ev) =>
             {
                 histories.HighlightMatchingCommitSubjects = !histories.HighlightMatchingCommitSubjects;
+                ev.Handled = true;
+            };
+
+            var historyScope = new MenuItem();
+            historyScope.Header = new TextBlock() { Text = App.Text("Histories.HistoryScope"), FontWeight = FontWeight.Bold };
+            historyScope.IsEnabled = false;
+
+            var includeCurrent = new MenuItem() { Name = "IncludeCurrentHistoryBranchMenuItem" };
+            includeCurrent.Header = App.Text("Histories.IncludeCurrentBranch");
+            includeCurrent.IsEnabled = histories.IsBranchHistoryMode;
+            if (histories.IncludeCurrentBranchInHistory)
+                includeCurrent.Icon = this.CreateMenuIcon("Icons.Check");
+            includeCurrent.Click += (_, ev) =>
+            {
+                histories.IncludeCurrentBranchInHistory = !histories.IncludeCurrentBranchInHistory;
                 ev.Handled = true;
             };
 
@@ -670,7 +743,6 @@ namespace SourceGit.Views
             menu.Items.Add(new MenuItem() { Header = "-" });
             menu.Items.Add(showFlags);
             menu.Items.Add(reflog);
-            menu.Items.Add(firstParentOnly);
             menu.Items.Add(simplifyByDecoration);
             menu.Items.Add(new MenuItem() { Header = "-" });
             menu.Items.Add(order);
@@ -680,11 +752,17 @@ namespace SourceGit.Views
             menu.Items.Add(highlights);
             menu.Items.Add(all);
             menu.Items.Add(currentBranchOnly);
+            if (histories.CanHighlightSelectedBranch)
+                menu.Items.Add(selectedBranchOnly);
             menu.Items.Add(selectedCommitsOnly);
             menu.Items.Add(selectedCommitsOnlyFirstParent);
             menu.Items.Add(currentBranchAndSelectedCommits);
-            menu.Items.Add(new MenuItem() { Header = "-" });
+            menu.Items.Add(focusedHistory);
             menu.Items.Add(matchingSubjects);
+            menu.Items.Add(new MenuItem() { Header = "-" });
+            menu.Items.Add(historyScope);
+            menu.Items.Add(includeCurrent);
+            menu.Items.Add(firstParentOnly);
             menu.Items.Add(new MenuItem() { Header = "-" });
             menu.Items.Add(columnsHeader);
             menu.Items.Add(authorColumn);

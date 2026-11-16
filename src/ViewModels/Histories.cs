@@ -180,7 +180,7 @@ namespace SourceGit.ViewModels
             set
             {
                 if (_detailContext != value && _detailContext is CommitDetail previous)
-                    previous.SubjectMatches.Cancel();
+                    previous.CancelPendingLoads();
 
                 if (SetProperty(ref _detailContext, value))
                     OnPropertyChanged(nameof(IsOpenAsStandaloneVisible));

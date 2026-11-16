@@ -40,6 +40,14 @@ namespace SourceGit.ViewModels
                 if (value != _sharedData.ActiveTabIndex)
                 {
                     _sharedData.ActiveTabIndex = value;
+                    if (value != 2)
+                    {
+                        CancelRevisionFilePreview();
+                        ViewRevisionFileContent = null;
+                        ViewRevisionFilePath = string.Empty;
+                        CanOpenRevisionFileWithDefaultEditor = false;
+                    }
+
                     OnPropertyChanged(nameof(ActiveTabIndex));
 
                     if (DiffContext == null)
@@ -200,6 +208,13 @@ namespace SourceGit.ViewModels
         public void CancelRevisionFileSuggestions()
         {
             RevisionFileSearchSuggestion = null;
+        }
+
+        public void CancelPendingLoads()
+        {
+            _cancellationSource?.Cancel();
+            CancelRevisionFilePreview();
+            SubjectMatches.Cancel();
         }
 
         public async Task<Models.Commit> GetCommitAsync(string sha)
@@ -401,32 +416,53 @@ namespace SourceGit.ViewModels
             log.Complete();
         }
 
-        public async Task<List<Models.Object>> GetRevisionFilesUnderFolderAsync(string parentFolder)
+        public async Task ViewRevisionFileAsync(Models.Object file, CancellationToken cancellationToken = default)
         {
-            return await new Commands.QueryRevisionObjects(_repo.FullPath, _commit.SHA, parentFolder)
-                .GetResultAsync()
-                .ConfigureAwait(false);
-        }
+            CancelRevisionFilePreview();
+            if (file?.Type is not (Models.ObjectType.Blob or Models.ObjectType.Commit))
+                file = null;
 
-        public async Task ViewRevisionFileAsync(Models.Object file)
-        {
-            var obj = file ?? new Models.Object() { Path = string.Empty, Type = Models.ObjectType.None };
-            ViewRevisionFilePath = obj.Path;
+            ViewRevisionFileContent = null;
+            ViewRevisionFilePath = file?.Path ?? string.Empty;
+            CanOpenRevisionFileWithDefaultEditor = false;
 
-            switch (obj.Type)
+            var sha = _commit?.SHA;
+            if (file == null || string.IsNullOrEmpty(sha) || ActiveTabIndex != 2)
+                return;
+
+            // Changing the commit, the tab or the file cancels this source, so an
+            // uncancelled token means the result still belongs to the current selection.
+            using var source = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            _revisionFilePreviewCancellationSource = source;
+            var token = source.Token;
+            try
             {
-                case Models.ObjectType.Blob:
-                    CanOpenRevisionFileWithDefaultEditor = true;
-                    await SetViewingBlobAsync(obj);
-                    break;
-                case Models.ObjectType.Commit:
-                    CanOpenRevisionFileWithDefaultEditor = false;
-                    await SetViewingCommitAsync(obj);
-                    break;
-                default:
-                    CanOpenRevisionFileWithDefaultEditor = false;
-                    ViewRevisionFileContent = null;
-                    break;
+                var content = await Task.Run(() => LoadRevisionFileContentAsync(file, sha, token), token);
+                if (token.IsCancellationRequested)
+                {
+                    (content as Models.RevisionImageFile)?.Image?.Dispose();
+                    return;
+                }
+
+                if (content is Models.LFSObject lfs)
+                {
+                    var decoder = ImageSource.GetDecoder(file.Path);
+                    content = decoder == Models.ImageDecoder.None
+                        ? new Models.RevisionLFSObject() { Object = lfs }
+                        : new RevisionLFSImage(_repo.FullPath, file.Path, lfs, decoder);
+                }
+
+                CanOpenRevisionFileWithDefaultEditor = file.Type == Models.ObjectType.Blob;
+                ViewRevisionFileContent = content;
+            }
+            catch (OperationCanceledException) when (token.IsCancellationRequested)
+            {
+                // A newer selection owns the preview.
+            }
+            finally
+            {
+                if (_revisionFilePreviewCancellationSource == source)
+                    _revisionFilePreviewCancellationSource = null;
             }
         }
 
@@ -456,6 +492,7 @@ namespace SourceGit.ViewModels
 
         private void Refresh()
         {
+            CancelPendingLoads();
             SubjectMatches.SetCommit(_commit);
             _requestingRevisionFiles = false;
             _revisionFiles = null;
@@ -476,15 +513,15 @@ namespace SourceGit.ViewModels
                 return;
             }
 
-            if (_cancellationSource is { IsCancellationRequested: false })
-                _cancellationSource.Cancel();
-
             _cancellationSource = new CancellationTokenSource();
             var token = _cancellationSource.Token;
+            var commit = _commit;
+            var delay = ActiveTabIndex == 2 ? FILES_REFRESH_DELAY : 0;
 
             Task.Run(async () =>
             {
-                var message = await new Commands.QueryCommitFullMessage(_repo.FullPath, _commit.SHA)
+                await Task.Delay(delay, token).ConfigureAwait(false);
+                var message = await new Commands.QueryCommitFullMessage(_repo.FullPath, commit.SHA)
                     .GetResultAsync()
                     .ConfigureAwait(false);
                 var inlines = await ParseInlinesInMessageAsync(message).ConfigureAwait(false);
@@ -492,6 +529,9 @@ namespace SourceGit.ViewModels
                 if (!token.IsCancellationRequested)
                     Dispatcher.UIThread.Post(() =>
                     {
+                        if (token.IsCancellationRequested)
+                            return;
+
                         FullMessage = new Models.CommitFullMessage
                         {
                             Message = message,
@@ -502,17 +542,23 @@ namespace SourceGit.ViewModels
 
             Task.Run(async () =>
             {
-                var signInfo = await new Commands.QueryCommitSignInfo(_repo.FullPath, _commit.SHA, !_repo.HasAllowedSignersFile)
+                await Task.Delay(delay, token).ConfigureAwait(false);
+                var signInfo = await new Commands.QueryCommitSignInfo(_repo.FullPath, commit.SHA, !_repo.HasAllowedSignersFile)
                     .GetResultAsync()
                     .ConfigureAwait(false);
 
                 if (!token.IsCancellationRequested)
-                    Dispatcher.UIThread.Post(() => SignInfo = signInfo);
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        if (!token.IsCancellationRequested)
+                            SignInfo = signInfo;
+                    });
             }, token);
 
             Task.Run(async () =>
             {
-                var changes = await new Commands.CompareRevisions(_repo.FullPath, _commit.FirstParentToCompare, _commit.SHA)
+                await Task.Delay(delay, token).ConfigureAwait(false);
+                var changes = await new Commands.CompareRevisions(_repo.FullPath, commit.FirstParentToCompare, commit.SHA)
                     .ReadAsync()
                     .ConfigureAwait(false);
 
@@ -531,6 +577,9 @@ namespace SourceGit.ViewModels
                 {
                     Dispatcher.UIThread.Post(() =>
                     {
+                        if (token.IsCancellationRequested)
+                            return;
+
                         Changes = changes;
                         VisibleChanges = visible;
 
@@ -680,47 +729,60 @@ namespace SourceGit.ViewModels
             RevisionFileSearchSuggestion = suggestion;
         }
 
-        private async Task SetViewingBlobAsync(Models.Object file)
+        private void CancelRevisionFilePreview()
         {
-            var isBinary = await new Commands.IsBinary(_repo.FullPath, _commit.SHA, file.Path).GetResultAsync();
+            var source = _revisionFilePreviewCancellationSource;
+            _revisionFilePreviewCancellationSource = null;
+            source?.Cancel();
+        }
+
+        private async Task<object> LoadRevisionFileContentAsync(Models.Object file, string sha, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+            if (file.Type == Models.ObjectType.Commit)
+            {
+                var submoduleRoot = Path.Combine(_repo.FullPath, file.Path).Replace('\\', '/').TrimEnd('/');
+                return await new Commands.QuerySubmoduleRevision(submoduleRoot, file.SHA)
+                    .GetResultAsync()
+                    .ConfigureAwait(false);
+            }
+
+            var isBinary = await new Commands.IsBinary(_repo.FullPath, sha, file.Path)
+                .GetResultAsync()
+                .ConfigureAwait(false);
+            token.ThrowIfCancellationRequested();
             if (isBinary)
             {
                 var imgDecoder = ImageSource.GetDecoder(file.Path);
                 if (imgDecoder != Models.ImageDecoder.None)
                 {
-                    var source = await ImageSource.FromRevisionAsync(_repo.FullPath, _commit.SHA, file.Path, imgDecoder);
-                    ViewRevisionFileContent = new Models.RevisionImageFile(file.Path, source.Bitmap, source.Size);
-                }
-                else
-                {
-                    var size = await new Commands.QueryFileSize(_repo.FullPath, file.Path, _commit.SHA).GetResultAsync();
-                    ViewRevisionFileContent = new Models.RevisionBinaryFile(_repo.FullPath, file.Path, _commit.SHA, size);
+                    var source = await ImageSource.FromRevisionAsync(_repo.FullPath, sha, file.Path, imgDecoder).ConfigureAwait(false);
+                    if (token.IsCancellationRequested)
+                    {
+                        source.Bitmap?.Dispose();
+                        token.ThrowIfCancellationRequested();
+                    }
+
+                    return new Models.RevisionImageFile(file.Path, source.Bitmap, source.Size);
                 }
 
-                return;
+                var size = await new Commands.QueryFileSize(_repo.FullPath, file.Path, sha)
+                    .GetResultAsync()
+                    .ConfigureAwait(false);
+                token.ThrowIfCancellationRequested();
+                return new Models.RevisionBinaryFile(_repo.FullPath, file.Path, sha, size);
             }
 
-            await using var contentStream = await Commands.QueryFileContent.RunAsync(_repo.FullPath, _commit.SHA, file.Path);
-            var content = await new StreamReader(contentStream).ReadToEndAsync();
+            await using var contentStream = await Commands.QueryFileContent.RunAsync(_repo.FullPath, sha, file.Path).ConfigureAwait(false);
+            token.ThrowIfCancellationRequested();
+            using var reader = new StreamReader(contentStream);
+            var content = await reader.ReadToEndAsync(token).ConfigureAwait(false);
+            token.ThrowIfCancellationRequested();
             var lfs = Models.LFSObject.Parse(content);
             if (lfs != null)
-            {
-                var imgDecoder = ImageSource.GetDecoder(file.Path);
-                if (imgDecoder != Models.ImageDecoder.None)
-                    ViewRevisionFileContent = new RevisionLFSImage(_repo.FullPath, file.Path, lfs, imgDecoder);
-                else
-                    ViewRevisionFileContent = new Models.RevisionLFSObject() { Object = lfs };
-            }
-            else
-            {
-                ViewRevisionFileContent = new Models.RevisionTextFile() { FileName = file.Path, Content = content };
-            }
-        }
+                return lfs;
 
-        private async Task SetViewingCommitAsync(Models.Object file)
-        {
-            var submoduleRoot = Path.Combine(_repo.FullPath, file.Path).Replace('\\', '/').TrimEnd('/');
-            ViewRevisionFileContent = await new Commands.QuerySubmoduleRevision(submoduleRoot, file.SHA).GetResultAsync();
+            return new Models.RevisionTextFile() { FileName = file.Path, Content = content };
         }
 
         [GeneratedRegex(@"\b(https?://|ftp://)[\w\d\._/\-~%@()+:?&=#!]*[\w\d/]")]
@@ -732,6 +794,7 @@ namespace SourceGit.ViewModels
         [GeneratedRegex(@"`.*?`")]
         private static partial Regex REG_INLINECODE_FORMAT();
 
+        private const int FILES_REFRESH_DELAY = 200;
         private Repository _repo = null;
         private CommitDetailSharedData _sharedData = null;
         private Models.Commit _commit = null;
@@ -744,6 +807,7 @@ namespace SourceGit.ViewModels
         private DiffContext _diffContext = null;
         private string _viewRevisionFilePath = string.Empty;
         private object _viewRevisionFileContent = null;
+        private CancellationTokenSource _revisionFilePreviewCancellationSource = null;
         private CancellationTokenSource _cancellationSource = null;
         private bool _requestingRevisionFiles = false;
         private List<string> _revisionFiles = null;

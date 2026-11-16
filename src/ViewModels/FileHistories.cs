@@ -100,7 +100,7 @@ namespace SourceGit.ViewModels
                     .GetResultAsync()
                     .ConfigureAwait(false);
 
-                if (objs.Count == 0)
+                if (objs is not { Count: > 0 })
                 {
                     Dispatcher.UIThread.Post(() => ViewContent = new FileHistoriesRevisionFile(_file));
                     return;

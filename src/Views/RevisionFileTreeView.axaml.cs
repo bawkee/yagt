@@ -235,140 +235,37 @@ namespace SourceGit.Views
             InitializeComponent();
         }
 
-        public async Task SetSearchResultAsync(string file)
+        public Task SetSearchResultAsync(string file)
         {
-            Rows.Clear();
-            _searchResult.Clear();
-
-            var rows = new List<ViewModels.RevisionFileTreeNode>();
-            if (string.IsNullOrEmpty(file))
-            {
-                MakeRows(rows, _tree, 0);
-            }
-            else
-            {
-                var vm = DataContext as ViewModels.CommitDetail;
-                if (vm?.Commit == null)
-                    return;
-
-                var objects = await vm.GetRevisionFilesUnderFolderAsync(file);
-                if (objects is not { Count: 1 })
-                    return;
-
-                var routes = file.Split('/');
-                if (routes.Length == 1)
-                {
-                    _searchResult.Add(new ViewModels.RevisionFileTreeNode
-                    {
-                        Backend = objects[0]
-                    });
-                }
-                else
-                {
-                    var last = _searchResult;
-                    var prefix = string.Empty;
-                    for (var i = 0; i < routes.Length - 1; i++)
-                    {
-                        var folder = new ViewModels.RevisionFileTreeNode
-                        {
-                            Backend = new Models.Object
-                            {
-                                Type = Models.ObjectType.Tree,
-                                Path = prefix + routes[i],
-                            },
-                            IsExpanded = true,
-                        };
-
-                        last.Add(folder);
-                        last = folder.Children;
-                        prefix = folder.Backend.Path + "/";
-                    }
-
-                    last.Add(new ViewModels.RevisionFileTreeNode
-                    {
-                        Backend = objects[0]
-                    });
-                }
-
-                MakeRows(rows, _searchResult, 0);
-            }
-
-            Rows.AddRange(rows);
-
-            if (_searchResult.Count > 0)
-            {
-                var lastNode = Rows[^1];
-                RowsList.SelectedItem = lastNode;
-                RowsList.ScrollIntoView(lastNode);
-            }
-
-            GC.Collect();
+            return SetTreeSearchResultAsync(file);
         }
 
-        public async Task ToggleNodeIsExpandedAsync(ViewModels.RevisionFileTreeNode node)
+        public Task ToggleNodeIsExpandedAsync(ViewModels.RevisionFileTreeNode node)
         {
-            _disableSelectionChangingEvent = true;
-            node.IsExpanded = !node.IsExpanded;
-
-            var depth = node.Depth;
-            var idx = Rows.IndexOf(node);
-            if (idx == -1)
-                return;
-
-            if (node.IsExpanded)
-            {
-                var subtree = await GetChildrenOfTreeNodeAsync(node);
-                if (subtree is { Count: > 0 })
-                {
-                    var subrows = new List<ViewModels.RevisionFileTreeNode>();
-                    MakeRows(subrows, subtree, depth + 1);
-                    Rows.InsertRange(idx + 1, subrows);
-                }
-            }
-            else
-            {
-                var removeCount = 0;
-                for (int i = idx + 1; i < Rows.Count; i++)
-                {
-                    var row = Rows[i];
-                    if (row.Depth <= depth)
-                        break;
-
-                    removeCount++;
-                }
-                Rows.RemoveRange(idx + 1, removeCount);
-            }
-
-            _disableSelectionChangingEvent = false;
+            return ToggleTreeNodeAsync(node);
         }
 
-        protected override async void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == RevisionProperty)
-            {
-                _tree.Clear();
-                _searchResult.Clear();
-
-                if (DataContext is ViewModels.CommitDetail { ActiveTabIndex: 2 } vm)
-                    await ReloadTreeData(vm);
-                else
-                    Rows.Clear();
-            }
+                InvalidateTreeRevision();
+            else if (change.Property == IsVisibleProperty)
+                ScheduleTreeRefresh();
         }
 
-        protected override async void OnLoaded(RoutedEventArgs e)
+        protected override void OnLoaded(RoutedEventArgs e)
         {
             base.OnLoaded(e);
-
-            if (DataContext is ViewModels.CommitDetail vm && _tree.Count == 0)
-                await ReloadTreeData(vm);
+            _isTreeLoaded = true;
+            ScheduleTreeRefresh();
         }
 
         private void OnTreeNodeContextRequested(object sender, ContextRequestedEventArgs e)
         {
             if (DataContext is ViewModels.CommitDetail { Repository: { } repo, Commit: { } commit } vm &&
+                string.Equals(_loadedRevision, commit.SHA, StringComparison.Ordinal) &&
                 sender is Grid { DataContext: ViewModels.RevisionFileTreeNode { Backend: { } obj } } grid)
             {
                 var menu = obj.Type switch
@@ -396,35 +293,10 @@ namespace SourceGit.Views
 
         private async void OnRowsSelectionChanged(object sender, SelectionChangedEventArgs _)
         {
-            if (_disableSelectionChangingEvent || DataContext is not ViewModels.CommitDetail vm)
+            if (_disableSelectionChangingEvent)
                 return;
 
-            if (sender is ListBox { SelectedItem: ViewModels.RevisionFileTreeNode { IsFolder: false } node })
-                await vm.ViewRevisionFileAsync(node.Backend);
-            else
-                await vm.ViewRevisionFileAsync(null);
-        }
-
-        private async Task<List<ViewModels.RevisionFileTreeNode>> GetChildrenOfTreeNodeAsync(ViewModels.RevisionFileTreeNode node)
-        {
-            if (!node.IsFolder)
-                return null;
-
-            if (node.Children.Count > 0)
-                return node.Children;
-
-            if (DataContext is not ViewModels.CommitDetail vm)
-                return null;
-
-            var objects = await vm.GetRevisionFilesUnderFolderAsync(node.Backend.Path + "/");
-            if (objects == null || objects.Count == 0)
-                return null;
-
-            foreach (var obj in objects)
-                node.Children.Add(new ViewModels.RevisionFileTreeNode() { Backend = obj });
-
-            SortNodes(node.Children);
-            return node.Children;
+            await PreviewTreeSelectionAsync();
         }
 
         private void MakeRows(List<ViewModels.RevisionFileTreeNode> rows, List<ViewModels.RevisionFileTreeNode> nodes, int depth)
@@ -439,51 +311,6 @@ namespace SourceGit.Views
 
                 MakeRows(rows, node.Children, depth + 1);
             }
-        }
-
-        private void SortNodes(List<ViewModels.RevisionFileTreeNode> nodes)
-        {
-            nodes.Sort((l, r) =>
-            {
-                if (l.IsFolder == r.IsFolder)
-                    return Models.NumericSort.Compare(l.Name, r.Name);
-                return l.IsFolder ? -1 : 1;
-            });
-        }
-
-        private async Task ReloadTreeData(ViewModels.CommitDetail vm)
-        {
-            if (_isReloadingTreeData)
-                return;
-
-            _isReloadingTreeData = true;
-
-            if (vm?.Commit == null)
-            {
-                Rows.Clear();
-                _isReloadingTreeData = false;
-                return;
-            }
-
-            var objects = await vm.GetRevisionFilesUnderFolderAsync(null);
-            if (objects == null || objects.Count == 0)
-            {
-                Rows.Clear();
-                _isReloadingTreeData = false;
-                return;
-            }
-
-            foreach (var obj in objects)
-                _tree.Add(new ViewModels.RevisionFileTreeNode { Backend = obj });
-
-            SortNodes(_tree);
-
-            var topTree = new List<ViewModels.RevisionFileTreeNode>();
-            MakeRows(topTree, _tree, 0);
-
-            Rows.Clear();
-            Rows.AddRange(topTree);
-            _isReloadingTreeData = false;
         }
 
         private ContextMenu CreateRevisionFileContextMenuByFolder(ViewModels.Repository repo, Models.Commit commit, string path)
@@ -784,9 +611,6 @@ namespace SourceGit.Views
         }
 
         private string _revision = string.Empty;
-        private List<ViewModels.RevisionFileTreeNode> _tree = [];
         private bool _disableSelectionChangingEvent = false;
-        private List<ViewModels.RevisionFileTreeNode> _searchResult = [];
-        private bool _isReloadingTreeData = false;
     }
 }

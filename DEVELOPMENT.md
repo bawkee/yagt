@@ -48,6 +48,14 @@ dotnet list src/YAGT.csproj package --vulnerable --include-transitive
 
 There is no application unit-test project. Launch the app and exercise the changed behavior. CI also builds and publishes for Windows, macOS, and Linux; a local Windows build does not verify other platforms.
 
+Run the Files-pane regression checks from a desktop session:
+
+```powershell
+dotnet run --project tests/RevisionFilesChecks/RevisionFilesChecks.csproj
+```
+
+These checks use temporary repositories and isolated settings. They cover cancelled Git processes with inherited pipes, sustained arrow-key navigation, the 200 ms refresh delay, and recovery after navigation stops.
+
 For translation maintenance, install the same dependencies used by CI:
 
 ```powershell

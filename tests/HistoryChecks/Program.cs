@@ -42,6 +42,7 @@ internal static class Program
                 return;
             }
 
+            CheckEmptyClone(fixture, args.Contains("--render-first-sync", StringComparer.Ordinal));
             var graph = CreateFixture(fixture);
             CheckQueries(fixture, graph);
             repo = new VM.Repository(false, fixture, Path.Combine(fixture, ".git"));
@@ -79,6 +80,113 @@ internal static class Program
                     File.SetAttributes(file, FileAttributes.Normal);
                 Directory.Delete(fixture, true);
             }
+        }
+    }
+
+    private static void CheckEmptyClone(string fixture, bool renderFirstSync)
+    {
+        var origin = Path.Combine(fixture, "empty-origin");
+        var path = Path.Combine(fixture, "empty-clone");
+        Directory.CreateDirectory(origin);
+        Git(origin, "init", "--bare", "-b", "main");
+        Check(Await(new Commands.Clone(fixture, fixture, origin, "empty-clone", "", "").ExecAsync()),
+            "cloning an empty repository succeeds");
+
+        var errors = new System.Collections.Concurrent.ConcurrentQueue<string>();
+        Action<Models.Notification> onNotification = notification =>
+        {
+            if (notification.IsError)
+                errors.Enqueue(notification.Message);
+        };
+        Models.Notification.Raised += onNotification;
+        var repo = new VM.Repository(false, path, Path.Combine(path, ".git"));
+        try
+        {
+            repo.Open();
+            var initial = repo.Histories.Commits;
+            PumpUntil(() => !repo.Histories.IsLoading && !ReferenceEquals(initial, repo.Histories.Commits));
+            Check(repo.Histories.Commits.Count == 0 && errors.IsEmpty,
+                "opening an empty clone completes with empty history and no errors");
+
+            using var lockWatcher = repo.LockWatcher();
+            Git(path, "config", "user.name", "History Check");
+            Git(path, "config", "user.email", "history@example.com");
+            Git(path, "config", "commit.gpgsign", "false");
+            var tree = Git(path, "mktree", input: string.Empty);
+            var root = Commit(path, tree, "first commit", 1_600_000_000);
+            Refresh(repo, () => Git(path, "update-ref", "refs/remotes/origin/other", root));
+            Check(repo.Histories.Commits.Count == 1 && !repo.Histories.Commits[0].IsMerged && errors.IsEmpty,
+                "an unborn local branch shows remote history without merged markings or errors");
+
+            Refresh(repo, () => Git(path, "update-ref", "refs/heads/main", root));
+            Check(repo.Histories.Commits.Count == 1 && repo.Histories.Commits[0].IsMerged && errors.IsEmpty,
+                "history refresh shows the first local commit without reopening the clone");
+
+            repo.RefreshBranches();
+            PumpUntil(() => repo.CurrentBranch != null);
+            var push = new VM.Push(repo, null);
+            Check(push.IsPublishingBranch && push.Tracking && !push.CanStartDirectly(),
+                "first push remembers its destination and requests review even with an unborn upstream configured");
+            var sync = new VM.Push(repo, repo.CurrentBranch, true);
+            Check(sync.IsSyncSetup && sync.Tracking && !sync.CanStartDirectly() && sync.Check(),
+                "first sync selects a valid destination and keeps the Sync setup visible");
+            if (renderFirstSync)
+                RenderFirstSync(sync);
+            sync.Tracking = false;
+            Check(Await(sync.Sure()), "first sync publishes to the isolated remote repository");
+            Check(string.Equals(Git(path, "rev-parse", "--abbrev-ref", "@{upstream}"), "origin/main", StringComparison.Ordinal) &&
+                string.Equals(Git(origin, ["rev-parse", "main"]), root, StringComparison.Ordinal),
+                "first sync uploads commits and remembers the destination automatically");
+            sync.Cleanup();
+            PumpUntil(() => repo.CurrentBranch is { IsUpstreamGone: false });
+            Check(!new VM.Push(repo, null).IsPublishingBranch && errors.IsEmpty,
+                "subsequent operations recognize the published branch without reopening the repository");
+
+            errors.Clear();
+            var invalid = Query(path, "refs/heads/missing --", 100);
+            Check(invalid.Count == 0 && !errors.IsEmpty,
+                "explicit invalid history revisions still raise errors");
+        }
+        finally
+        {
+            repo.Close();
+            Models.Notification.Raised -= onNotification;
+        }
+    }
+
+    private static void RenderFirstSync(VM.Push sync)
+    {
+        var view = new Views.Push { DataContext = sync };
+        var zoom = new LayoutTransformControl { Child = view };
+        var window = new Window
+        {
+            Title = "YAGT First Sync Check", Width = 600, Height = 430,
+            Content = zoom, ShowActivated = false,
+            WindowStartupLocation = WindowStartupLocation.Manual,
+        };
+        DisplayPlacement.PositionOnDisplayOne(window);
+        try
+        {
+            window.Show();
+            foreach (var theme in new[] { "Light", "Dark" })
+            {
+                App.SetTheme(theme, null);
+                foreach (var scale in new[] { 1.0, 1.5 })
+                {
+                    window.Width = 600 * scale;
+                    window.Height = 430 * scale;
+                    zoom.LayoutTransform = new ScaleTransform(scale, scale);
+                    Arrange(window);
+                    Check(view.GetVisualDescendants().OfType<TextBlock>().Any(t => t.IsVisible && string.Equals(t.Text, "Sync", StringComparison.Ordinal)),
+                        "first publication is presented as Sync");
+                    RenderControl(window, $"first-sync-{theme}-{scale * 100}.png");
+                }
+            }
+        }
+        finally
+        {
+            window.Close();
+            App.SetTheme("Dark", null);
         }
     }
 

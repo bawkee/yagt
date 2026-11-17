@@ -109,7 +109,14 @@ namespace SourceGit.Commands
 
                 if (_markMerged && !findHead && commits.Count > 0)
                 {
-                    var set = await new QueryHistoryCommitHashes(WorkingDirectory, ["HEAD"], commits, false) { CancellationToken = CancellationToken }
+                    // Other refs can have history even when the current branch is unborn.
+                    var head = await new QueryRevisionByRefName(WorkingDirectory, "HEAD") { CancellationToken = CancellationToken }
+                        .GetResultAsync()
+                        .ConfigureAwait(false);
+                    if (string.IsNullOrEmpty(head))
+                        return commits;
+
+                    var set = await new QueryHistoryCommitHashes(WorkingDirectory, [head], commits, false) { CancellationToken = CancellationToken }
                         .GetResultAsync()
                         .ConfigureAwait(false);
 

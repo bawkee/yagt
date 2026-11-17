@@ -81,7 +81,7 @@
       <Button Classes="icon_button" Width="32" Margin="16,0,0,0" Tapped="Sync" IsVisible="{Binding !IsBare}">
         <ToolTip.Tip>
           <StackPanel Orientation="Vertical">
-            <TextBlock Text="{DynamicResource Text.Sync.Title}"/>
+            <TextBlock Text="{DynamicResource Text.Sync.Action}"/>
             <TextBlock Classes="small italic" Margin="0,4,0,0" Text="{DynamicResource Text.CtrlClickTip}" Foreground="{DynamicResource Brush.FG2}"
                        IsVisible="{Binding ShowToolbarCommandOptionsByDefault, Source={x:Static vm:Preferences.Instance}}"/>
             <TextBlock Classes="small italic" Margin="0,4,0,0" Text="{DynamicResource Text.CtrlClickTip.ShowOptions}" Foreground="{DynamicResource Brush.FG2}"

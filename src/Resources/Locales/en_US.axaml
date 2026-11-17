@@ -787,7 +787,10 @@
   <x:String x:Key="Text.Push.Local" xml:space="preserve">Local Branch:</x:String>
   <x:String x:Key="Text.Push.New" xml:space="preserve">NEW</x:String>
   <x:String x:Key="Text.Push.NoVerify" xml:space="preserve">Bypass the pre-push hook</x:String>
+  <x:String x:Key="Text.Push.PublishDescription" xml:space="preserve">Publish this branch to the selected remote repository to share your commits. Remember this destination so future syncs know where to send and receive changes.</x:String>
   <x:String x:Key="Text.Push.Remote" xml:space="preserve">Remote:</x:String>
+  <x:String x:Key="Text.Push.RememberDestination" xml:space="preserve">Use this destination for future syncs</x:String>
+  <x:String x:Key="Text.Push.RememberDestination.Tip" xml:space="preserve">Link this local branch to the selected remote branch for future pushes, pulls, and syncs.</x:String>
   <x:String x:Key="Text.Push.Revision" xml:space="preserve">Revision:</x:String>
   <x:String x:Key="Text.Push.Revision.Title" xml:space="preserve">Push Revision To Remote</x:String>
   <x:String x:Key="Text.Push.Title" xml:space="preserve">Push Changes To Remote</x:String>
@@ -1022,9 +1025,12 @@
   <x:String x:Key="Text.SubmoduleRevisionCompare" xml:space="preserve">Submodule Change Details</x:String>
   <x:String x:Key="Text.SubmoduleRevisionCompare.OpenDetails" xml:space="preserve">OPEN DETAILS</x:String>
   <x:String x:Key="Text.Sure" xml:space="preserve">OK</x:String>
+  <x:String x:Key="Text.Sync.Action" xml:space="preserve">Sync</x:String>
   <x:String x:Key="Text.Sync.Description" xml:space="preserve">Pull from the upstream branch, then push local commits to it. If pulling fails or leaves conflicts, Sync stops before pushing.</x:String>
+  <x:String x:Key="Text.Sync.PublishDescription" xml:space="preserve">Choose where to sync this branch. This first sync uploads your commits and remembers the destination so future syncs can send and receive changes automatically.</x:String>
   <x:String x:Key="Text.Sync.StashLocalChanges" xml:space="preserve">Stash and reapply local changes</x:String>
   <x:String x:Key="Text.Sync.Title" xml:space="preserve">Sync (Pull then Push)</x:String>
+  <x:String x:Key="Text.Sync.UpdateDescription" xml:space="preserve">Download new commits from the linked remote branch, then upload your commits. If the changes conflict, Sync stops so you can resolve them.</x:String>
   <x:String x:Key="Text.Tag.Tagger" xml:space="preserve">TAGGER</x:String>
   <x:String x:Key="Text.Tag.Time" xml:space="preserve">TIME</x:String>
   <x:String x:Key="Text.TagCM.Checkout" xml:space="preserve">Checkout Tag...</x:String>

@@ -8,6 +8,8 @@ namespace SourceGit.ViewModels
 {
     public class Push : Popup
     {
+        public bool IsSyncSetup { get; }
+
         public bool HasSpecifiedLocalBranch
         {
             get;
@@ -80,6 +82,9 @@ namespace SourceGit.ViewModels
             set => SetProperty(ref _tracking, value);
         }
 
+        public bool IsPublishingBranch => _selectedLocalBranch != null &&
+            (string.IsNullOrEmpty(_selectedLocalBranch.Upstream) || _selectedLocalBranch.IsUpstreamGone);
+
         public bool IsCheckSubmodulesVisible
         {
             get => _repo.Submodules.Count > 0;
@@ -109,9 +114,10 @@ namespace SourceGit.ViewModels
             set;
         }
 
-        public Push(Repository repo, Models.Branch localBranch)
+        public Push(Repository repo, Models.Branch localBranch, bool isSyncSetup = false)
         {
             _repo = repo;
+            IsSyncSetup = isSyncSetup;
             CanTerminate = true;
 
             // Gather all local branches and find current branch.
@@ -164,7 +170,7 @@ namespace SourceGit.ViewModels
 
         public override bool CanStartDirectly()
         {
-            return !string.IsNullOrEmpty(_selectedRemoteBranch?.Head);
+            return !IsSyncSetup && !IsPublishingBranch && !string.IsNullOrEmpty(_selectedRemoteBranch?.Head);
         }
 
         public override async Task<bool> Sure()
@@ -172,7 +178,7 @@ namespace SourceGit.ViewModels
             using var lockWatcher = _repo.LockWatcher();
             ProgressDescription = $"Push {_selectedLocalBranch.Name} -> {_selectedRemoteBranch.FriendlyName} ...";
 
-            var log = _repo.CreateLog("Push");
+            var log = _repo.CreateLog(IsSyncSetup ? "Sync" : "Push");
             Use(log);
 
             _cancellation = new CancellationTokenSource();
@@ -183,15 +189,18 @@ namespace SourceGit.ViewModels
                 _selectedLocalBranch,
                 _selectedRemote,
                 _selectedRemoteBranch,
-                PushAllTags,
+                !IsSyncSetup && PushAllTags,
                 _repo.Submodules.Count > 0 && CheckSubmodules,
-                _isSetTrackOptionVisible && _tracking,
-                ForcePush,
-                NoVerify).WithCancellation(token).Use(log).ExecAsync();
+                _isSetTrackOptionVisible && (IsSyncSetup || _tracking),
+                !IsSyncSetup && ForcePush,
+                !IsSyncSetup && NoVerify).WithCancellation(token).Use(log).ExecAsync();
 
             log.Complete();
 
             _cancellation = null;
+            if (succ)
+                _repo.MarkBranchesDirtyManually();
+
             return succ;
         }
 
@@ -206,9 +215,10 @@ namespace SourceGit.ViewModels
             if (_selectedLocalBranch == null)
                 return;
 
-            // Turn on `Set as tracking branch` if the selected local branch has no upstream.
+            // Remember the destination for new branches, including clones of empty repositories.
             // But don't change the visibility of the CheckBox, because it may be hidden by `PostSelectedRemoteChanged`.
-            Tracking = string.IsNullOrEmpty(_selectedLocalBranch.Upstream);
+            Tracking = IsPublishingBranch;
+            OnPropertyChanged(nameof(IsPublishingBranch));
 
             var remotes = new List<Models.Remote>();
             remotes.AddRange(_repo.Remotes);

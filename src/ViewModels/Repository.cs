@@ -727,9 +727,15 @@ namespace SourceGit.ViewModels
                 return;
             }
 
-            if (_currentBranch == null || _currentBranch.IsDetachedHead)
+            if (_currentBranch == null)
             {
-                SendNotification("Check out a local branch before synchronizing.", true);
+                SendNotification("Commit your changes before syncing. Sync uploads commits, so saved or staged files need to be committed first.", true);
+                return;
+            }
+
+            if (_currentBranch.IsDetachedHead)
+            {
+                SendNotification("Switch to a local branch before syncing so YAGT knows which branch to update.", true);
                 return;
             }
 
@@ -743,7 +749,8 @@ namespace SourceGit.ViewModels
             var remote = upstream == null ? null : _remotes.Find(x => x.Name.Equals(upstream.Remote, StringComparison.Ordinal));
             if (remote == null)
             {
-                SendNotification("Set an upstream branch using Push before synchronizing.", true);
+                // Let the user choose and remember a destination for the first push.
+                ShowPopup(new Push(this, _currentBranch, true));
                 return;
             }
 

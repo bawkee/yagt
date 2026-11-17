@@ -9,10 +9,10 @@
   <StackPanel Margin="8,0,0,0">
     <StackPanel Orientation="Horizontal">
       <Path Width="16" Height="16" Data="{StaticResource Icons.Sync}"/>
-      <TextBlock FontSize="18" Margin="8,0,0,0" Classes="bold" Text="{DynamicResource Text.Sync.Title}"/>
+      <TextBlock FontSize="18" Margin="8,0,0,0" Classes="bold" Text="{DynamicResource Text.Sync.Action}"/>
     </StackPanel>
 
-    <TextBlock Margin="0,16,8,0" Text="{DynamicResource Text.Sync.Description}" TextWrapping="Wrap" Foreground="{DynamicResource Brush.FG2}"/>
+    <TextBlock Margin="0,16,8,0" Text="{DynamicResource Text.Sync.UpdateDescription}" TextWrapping="Wrap" Foreground="{DynamicResource Brush.FG2}"/>
 
     <Grid Margin="0,16,8,0" RowDefinitions="32,32,32,Auto" ColumnDefinitions="120,*">
       <TextBlock Grid.Row="0" Grid.Column="0"

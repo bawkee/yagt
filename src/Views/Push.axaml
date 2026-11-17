@@ -11,15 +11,41 @@
   <StackPanel Orientation="Vertical" Margin="8,0">
     <StackPanel Orientation="Horizontal">
       <Path Width="16" Height="16"
-            Data="{StaticResource Icons.Push}"/>
+            Data="{StaticResource Icons.Push}"
+            IsVisible="{Binding !IsSyncSetup}"/>
+      <Path Width="16" Height="16"
+            Data="{StaticResource Icons.Sync}"
+            IsVisible="{Binding IsSyncSetup}"/>
 
       <TextBlock FontSize="18"
                  Margin="8,0,0,0"
                  Classes="bold"
-                 Text="{DynamicResource Text.Push.Title}"/>
+                 Text="{DynamicResource Text.Push.Title}"
+                 IsVisible="{Binding !IsSyncSetup}"/>
+      <TextBlock FontSize="18" Margin="8,0,0,0" Classes="bold"
+                 Text="{DynamicResource Text.Sync.Action}"
+                 IsVisible="{Binding IsSyncSetup}"/>
     </StackPanel>
 
-    <Grid Margin="0,16,0,0" RowDefinitions="32,32,32,Auto,Auto,Auto,32,32" ColumnDefinitions="130,*">
+    <TextBlock Margin="0,16,8,0"
+               Text="{DynamicResource Text.Sync.PublishDescription}"
+               TextWrapping="Wrap"
+               Foreground="{DynamicResource Brush.FG2}"
+               IsVisible="{Binding IsSyncSetup}"/>
+
+    <TextBlock Margin="0,16,8,0"
+               Text="{DynamicResource Text.Push.PublishDescription}"
+               TextWrapping="Wrap"
+               Foreground="{DynamicResource Brush.FG2}">
+      <TextBlock.IsVisible>
+        <MultiBinding Converter="{x:Static BoolConverters.And}">
+          <Binding Path="IsPublishingBranch"/>
+          <Binding Path="!IsSyncSetup"/>
+        </MultiBinding>
+      </TextBlock.IsVisible>
+    </TextBlock>
+
+    <Grid Margin="0,16,0,0" RowDefinitions="32,32,32,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="130,*">
       <TextBlock Grid.Row="0" Grid.Column="0"
                  HorizontalAlignment="Right" VerticalAlignment="Center"
                  Margin="0,0,8,0"
@@ -73,10 +99,16 @@
 
       <CheckBox Grid.Row="3" Grid.Column="1"
                 Height="32"
-                Content="{DynamicResource Text.Push.Tracking}"
+                Content="{DynamicResource Text.Push.RememberDestination}"
                 IsChecked="{Binding Tracking, Mode=TwoWay}"
-                IsVisible="{Binding IsSetTrackOptionVisible}"
-                ToolTip.Tip="-u"/>
+                ToolTip.Tip="{DynamicResource Text.Push.RememberDestination.Tip}">
+        <CheckBox.IsVisible>
+          <MultiBinding Converter="{x:Static BoolConverters.And}">
+            <Binding Path="IsSetTrackOptionVisible"/>
+            <Binding Path="!IsSyncSetup"/>
+          </MultiBinding>
+        </CheckBox.IsVisible>
+      </CheckBox>
 
       <CheckBox Grid.Row="4" Grid.Column="1"
                 Height="32"
@@ -88,16 +120,24 @@
       <CheckBox Grid.Row="5" Grid.Column="1"
                 Content="{DynamicResource Text.Push.WithAllTags}"
                 IsChecked="{Binding PushAllTags, Mode=TwoWay}"
-                IsVisible="{Binding SelectedRemote?.URL, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                ToolTip.Tip="--tags"/>
+                ToolTip.Tip="--tags">
+        <CheckBox.IsVisible>
+          <MultiBinding Converter="{x:Static BoolConverters.And}">
+            <Binding Path="SelectedRemote.URL" Converter="{x:Static StringConverters.IsNotNullOrEmpty}"/>
+            <Binding Path="!IsSyncSetup"/>
+          </MultiBinding>
+        </CheckBox.IsVisible>
+      </CheckBox>
 
       <CheckBox Grid.Row="6" Grid.Column="1"
                 Content="{DynamicResource Text.Push.NoVerify}"
+                IsVisible="{Binding !IsSyncSetup}"
                 IsChecked="{Binding NoVerify, Mode=TwoWay}"
                 ToolTip.Tip="--no-verify"/>
 
       <CheckBox Grid.Row="7" Grid.Column="1"
                 Content="{DynamicResource Text.Push.Force}"
+                IsVisible="{Binding !IsSyncSetup}"
                 IsChecked="{Binding ForcePush, Mode=TwoWay}"
                 ToolTip.Tip="--force-with-lease"/>
     </Grid>

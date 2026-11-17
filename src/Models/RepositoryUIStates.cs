@@ -495,7 +495,8 @@ namespace SourceGit.Models
 
             var mode = GetHistoryFilterMode();
             if (mode == FilterMode.None)
-                builder.Append("--branches --remotes --tags HEAD");
+                // HEAD is optional when the current branch has no commits yet.
+                builder.Append("--branches --remotes --tags --ignore-missing HEAD");
             else if (mode == FilterMode.Included)
                 BuildHistoryParamsForIncluded(builder);
             else
